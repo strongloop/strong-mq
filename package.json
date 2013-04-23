@@ -14,7 +14,13 @@
     "name": "Sam Roberts"
     , "email": "sam@strongloop.com"
   },
-  "license": "BSD",
-  "gitHead": "b7790520c0e5b849e76b7448fa6d6d1b3b85f5ca",
-  "engines": { "node": "*" }
+  "dependencies": {
+    "amqp": "latest"
+  },
+  "devDependencies": {
+    "mocha": "latest"
+  },
+  "engines": {
+    "node": "*"
+  }
 }
