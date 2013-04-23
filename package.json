@@ -1,0 +1,20 @@
+{
+  "name": "clustermq",
+  "version": "0.0.0",
+  "description": "MQ API with cluster integration, implemented over various message queues",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/strongloop/slnode-clustermq.git"
+  },
+  "author": {
+    "name": "Sam Roberts"
+    , "email": "sam@strongloop.com"
+  },
+  "license": "BSD",
+  "gitHead": "b7790520c0e5b849e76b7448fa6d6d1b3b85f5ca",
+  "engines": { "node": "*" }
+}
