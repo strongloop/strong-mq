@@ -31,7 +31,7 @@ describe("check for amqp connectivity", function () {
 
 
 describe("SomeTest", function () {
-  it.skip("sync fail", function () {
+  it("sync fail", function () {
     assert(false, "ok")
   })
   it.skip("leaks globals", function () {
