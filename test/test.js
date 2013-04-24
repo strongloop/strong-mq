@@ -48,18 +48,3 @@ describe("SomeTest", function () {
   })
 })
 
-describe("the undocumented mocha hooks", function () {
-  before(function () { console.log("doing before") })
-  beforeEach(function () { console.log("doing beforeEach") })
-  after(function () { console.log("doing after") })
-  afterEach(function () { console.log("doing afterEach") })
-
-  it("does test one", function () {
-    console.log("test one");
-  })
-  it("does test two", function () {
-    console.log("test two")
-  })
-})
-
-
