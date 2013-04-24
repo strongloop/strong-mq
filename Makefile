@@ -5,6 +5,9 @@
 test:
 	@mocha
 
+lint:
+	jshint *.js test
+
 jenkins-build: jenkins-install jenkins-test
 
 jenkins-install:
