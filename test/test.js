@@ -1,4 +1,15 @@
-assert = require("assert")
+var assert = require("assert")
+
+var cmq = require("../")
+
+describe("stub cluster test", function () {
+  it("can call the api", function (done) {
+    cmq.declare("forsooth!", function (value) {
+      assert.equal(value.whatever, "forsooth!")
+      done()
+    })
+  })
+})
 
 describe("SomeTest", function () {
   it.skip("sync fail", function () {
@@ -15,7 +26,6 @@ describe("SomeTest", function () {
       assert(true, "ok")
       done()
     })
-    console.log("passing to next tick")
   })
 })
 
