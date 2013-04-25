@@ -26,12 +26,12 @@ DeclareAmqp.prototype.open = function (callback) {
   function on_ready() {
     c.removeListener('error', on_error);
     callback();
-  };
+  }
 
   function on_error(err) {
     c.removeListener('ready', on_ready);
     callback(err);
-  };
+  }
 
   c.once('ready', on_ready);
   c.once('error', on_error);
@@ -53,8 +53,61 @@ DeclareAmqp.prototype.close = function (callback) {
   return this;
 };
 
+// FIXME not clear where errors go... should we register for
+// error event before every interaction? Can errors occur at
+// other times, necessitating a error handler for the whole
+// connection? Hm.
+
+// Get amqp connection for a queue
+function c(q) {
+  return q._declaration._connection;
+}
+
+// callback with err, or (null, queue) when queue is ready
+function PushAmqp (declaration, name, callback) {
+  this._declaration = declaration;
+  this._q = c(this).queue(name, function (queue) {
+    callback(null, queue);
+  });
+}
+
+PushAmqp.prototype.push = function (msg) {
+  c(this).publish(this._q.name, msg);
+  return this;
+};
+
+PushAmqp.prototype.close = function() {
+  this._q.destroy(/* ifUnused? ifEmpty? */);
+};
+
+DeclareAmqp.prototype.pushQueue = function (name, callback) {
+  return new PushAmqp(this, name, callback);
+};
+
+function PullAmqp (declaration, name, callback) {
+  this._declaration = declaration;
+  this._q = c(this).queue(name, function (queue) {
+    callback(null, queue);
+  });
+}
+
+PullAmqp.prototype.subscribe = function (msg) {
+  throw Error("unimplemented");
+  //return this;
+};
+
+PullAmqp.prototype.close = function() {
+  this._q.destroy(/* ifUnused? ifEmpty? */);
+};
+
+DeclareAmqp.prototype.pullQueue = function (name, callback) {
+  return new PullAmqp(this, name, callback);
+};
+
+
 // options.provider: mandatory, one of "amqp"
 // options.*: as supported by provider
+// TODO support a URL string alternative to an options object
 exports.declare = function (options) {
   return new providers[options.provider](options);
 };
