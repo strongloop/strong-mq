@@ -1,11 +1,23 @@
 var assert = require("assert");
 var cmq = require("../");
 
-describe("stub cluster test", function () {
-  it("can call the api", function (done) {
-    cmq.declare("forsooth!", function (value) {
-      assert.equal(value.whatever, "forsooth!");
-      done();
+describe("declaration", function () {
+  it("declare amqp connector", function () {
+    var mq = cmq.declare({provider:'amqp'});
+    assert.equal(mq.provider, 'amqp');
+  });
+
+  it("should puke on invalid inputs", function () {
+    // TODO convention for arg checking: assert?
+    assert.throws(function () {
+      cmq.declare();
+    });
+    assert.throws(function () {
+      cmq.declare({});
+    });
+    assert.throws(function () {
+      cmq.declare({provider:'no such provider'});
     });
   });
 });
+
