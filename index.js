@@ -5,14 +5,42 @@ var assert = require('assert');
 
 var copy = require('underscore').clone;
 
+var parse = require("url").parse;
+
 // declaration of providers
+
+function urlProvider(url) {
+  var protocol = parse(url).protocol;
+  return protocol.split(":")[0];
+}
+
+function extractProvider(options) {
+  var provider;
+  var url;
+  if (typeof options == "string") {
+    provider = urlProvider(options);
+    url = options;
+    options = null;
+  } else {
+    provider = options.provider;
+    url = null;
+    options = copy(options);
+    delete options.provider;
+  }
+
+  return [provider, url, options];
+}
 
 var providers = {};
 
 // options.provider: mandatory, one of 'amqp'
 // options.*: as supported by provider
 exports.declare = function (options) {
-  return new providers[options.provider](options);
+  var parsed = extractProvider(options);
+  var provider = parsed[0];
+  var url = parsed[1];
+  options = parsed[2];
+  return new providers[provider](provider, url, options);
 };
 
 // amqp
@@ -20,12 +48,10 @@ exports.declare = function (options) {
 providers.amqp = DeclareAmqp;
 
 // Supported options are as for amqp.createConnection():
-//   host, port, login, // password, vhost.
-function DeclareAmqp(options) {
-  this.provider = options.provider;
-  this._connectOptions = copy(options);
-
-  delete this._connectOptions.provider;
+//   host, port, login, password, vhost
+function DeclareAmqp(provider, url, options) {
+  this.provider = provider;
+  this._connectOptions = url ? {url:url} : options;
 }
 
 DeclareAmqp.prototype.open = function (callback) {

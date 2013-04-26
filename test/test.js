@@ -23,6 +23,14 @@ describe("declaration", function () {
 });
 
 describe("opening amqp", function () {
+  it("should open and close with localhost url", function (done) {
+    var mq = cmq.declare("amqp://localhost");
+    mq.open(function (err) {
+      if (err) return done(err);
+      mq.close(done);
+    });
+  });
+
   it("should open and close with default options", function (done) {
     var mq = cmq.declare({provider:'amqp'});
     mq.open(function (err) {
