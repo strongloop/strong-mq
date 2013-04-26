@@ -65,9 +65,10 @@ function c(q) {
 
 // callback with err, or (null, queue) when queue is ready
 function PushAmqp (declaration, name, callback) {
+  var self = this;
   this._declaration = declaration;
-  this._q = c(this).queue(name, function (queue) {
-    callback(null, queue);
+  this._q = c(this).queue(name, function () {
+    callback(null, self);
   });
 }
 
@@ -85,15 +86,21 @@ DeclareAmqp.prototype.pushQueue = function (name, callback) {
 };
 
 function PullAmqp (declaration, name, callback) {
+  var self = this;
   this._declaration = declaration;
-  this._q = c(this).queue(name, function (queue) {
-    callback(null, queue);
+  this._q = c(this).queue(name, function () {
+    callback(null, self);
   });
 }
 
-PullAmqp.prototype.subscribe = function (msg) {
-  throw Error("unimplemented");
-  //return this;
+PullAmqp.prototype.subscribe = function (callback) {
+  this._q.subscribe(/* ack? prefetchCount? */ function (msg) {
+    if (msg.data && msg.contentType)
+      msg = msg.data; // non-json
+    // else msg is already-parsed json
+    callback(msg);
+  });
+  return this;
 };
 
 PullAmqp.prototype.close = function() {
