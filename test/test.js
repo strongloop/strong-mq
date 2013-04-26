@@ -2,9 +2,19 @@ var assert = require("assert");
 var async = require("async");
 var cmq = require("../");
 
+var debug = true;
+
+if (debug) {
+  var dbg = console.log;
+} else {
+  var dbg = function () {};
+}
+
+var AMQP = {provider:'amqp'};
+
 describe("declaration", function () {
   it("declare amqp connector", function () {
-    var mq = cmq.declare({provider:'amqp'});
+    var mq = cmq.declare(AMQP);
     assert.equal(mq.provider, 'amqp');
   });
 
@@ -32,7 +42,7 @@ describe("opening amqp", function () {
   });
 
   it("should open and close with default options", function (done) {
-    var mq = cmq.declare({provider:'amqp'});
+    var mq = cmq.declare(AMQP);
     mq.open(function (err) {
       if (err) return done(err);
       mq.close(done);
@@ -55,7 +65,7 @@ describe("open and close work queues", function () {
   var mq;
 
   beforeEach(function (done) {
-    mq = cmq.declare({provider:'amqp'});
+    mq = cmq.declare(AMQP);
     mq.open(done);
   });
 
@@ -93,15 +103,6 @@ describe("open and close work queues", function () {
     });
   });
 
-  it("should publish into a queue", function (done) {
-    var pushQueue = mq.pushQueue("june", function (err) {
-      if (err) return done(err);
-      pushQueue.publish("bonjour, la soleil");
-      pushQueue.close();
-      done();
-    });
-  });
-
 });
 
 var connectAndOpen = function (options, qtype, qname, callback) {
@@ -123,18 +124,16 @@ var closeAndDisconnect = function (queue, connection, callback) {
   connection.close(callback);
 };
 
-var AMQP = {provider:'amqp'};
-
 describe("push and pull into work queues", function () {
   var mq;
 
   beforeEach(function (done) {
     async.parallel({
       push: function (callback) {
-        connectAndOpen({provider:'amqp'}, "pushQueue", "leonie", callback);
+        connectAndOpen(AMQP, "pushQueue", "leonie", callback);
       }
       , pull: function (callback) {
-        connectAndOpen({provider:'amqp'}, "pullQueue", "leonie", callback);
+        connectAndOpen(AMQP, "pullQueue", "leonie", callback);
       }
     }, function (err, results) {
       if (err) return done(err);
