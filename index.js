@@ -83,7 +83,7 @@ function PushAmqp (declaration, name, callback) {
   });
 }
 
-PushAmqp.prototype.push = function (msg) {
+PushAmqp.prototype.publish = function (msg) {
   c(this).publish(this._q.name, msg);
   return this;
 };

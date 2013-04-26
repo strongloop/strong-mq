@@ -71,10 +71,10 @@ describe("open and close work queues", function () {
     });
   });
 
-  it("should push into a queue", function (done) {
+  it("should publish into a queue", function (done) {
     var pushQueue = mq.pushQueue("june", function (err) {
       if (err) return done(err);
-      pushQueue.push("bonjour, la soleil");
+      pushQueue.publish("bonjour, la soleil");
       pushQueue.close();
       done();
     });
@@ -141,7 +141,7 @@ describe("push and pull into work queues", function () {
   });
 
   it("should receive sent strings", function (done) {
-    mq.push.queue.push("bonjour!");
+    mq.push.queue.publish("bonjour!");
     mq.pull.queue.subscribe(function (msg) {
       assert(msg == "bonjour!");
       done();
@@ -149,7 +149,7 @@ describe("push and pull into work queues", function () {
   });
 
   it("should receive sent json", function (done) {
-    mq.push.queue.push({salutation:"bonjour!"});
+    mq.push.queue.publish({salutation:"bonjour!"});
     mq.pull.queue.subscribe(function (msg) {
       assert.deepEqual(msg, {salutation:"bonjour!"});
       done();
@@ -157,7 +157,7 @@ describe("push and pull into work queues", function () {
   });
 
   it("should receive sent arrays", function (done) {
-    mq.push.queue.push(["salutation", "bonjour!"]);
+    mq.push.queue.publish(["salutation", "bonjour!"]);
     mq.pull.queue.subscribe(function (msg) {
       assert.deepEqual(msg, ["salutation", "bonjour!"]);
       done();
