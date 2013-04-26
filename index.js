@@ -3,14 +3,25 @@
 var amqp = require("amqp");
 var assert = require("assert");
 
+var _ = require("underscore");
+var copy = _.clone;
+
+// declaration of providers
+
 var providers = {};
+
+// options.provider: mandatory, one of "amqp"
+// options.*: as supported by provider
+exports.declare = function (options) {
+  return new providers[options.provider](options);
+};
 
 // amqp
 
 providers.amqp = DeclareAmqp;
 
-// Supported options are as for amqp.createConnection(): host, port, login,
-// password, vhost.
+// Supported options are as for amqp.createConnection():
+//   host, port, login, // password, vhost.
 function DeclareAmqp(options) {
   this.provider = options.provider;
   this._connectOptions = copy(options);
@@ -110,21 +121,4 @@ PullAmqp.prototype.close = function() {
 DeclareAmqp.prototype.pullQueue = function (name, callback) {
   return new PullAmqp(this, name, callback);
 };
-
-
-// options.provider: mandatory, one of "amqp"
-// options.*: as supported by provider
-// TODO support a URL string alternative to an options object
-exports.declare = function (options) {
-  return new providers[options.provider](options);
-};
-
-// TODO find libs for these
-function copy(s) {
-  var t = {};
-  for (var p in s) {
-    t[p] = s[p];
-  }
-  return t;
-}
 

@@ -20,6 +20,7 @@
   "devDependencies": {
     "mocha": "latest"
     , "async": "latest"
+    , "underscore": "latest"
   },
   "engines": {
     "node": "*"
