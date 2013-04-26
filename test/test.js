@@ -63,11 +63,25 @@ describe("open and close work queues", function () {
     });
   });
 
+  it("should open and wait for close of a push queue", function (done) {
+    var pushQueue = mq.pushQueue("june", function (err) {
+      if (err) return done(err);
+      pushQueue.close(done);
+    });
+  });
+
   it("should open and close a pull queue", function (done) {
     var pullQueue = mq.pullQueue("june", function (err) {
       if (err) return done(err);
       pullQueue.close();
       done();
+    });
+  });
+
+  it("should open and wait for close of a pull queue", function (done) {
+    var pullQueue = mq.pullQueue("june", function (err) {
+      if (err) return done(err);
+      pullQueue.close(done);
     });
   });
 

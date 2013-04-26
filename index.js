@@ -87,8 +87,11 @@ PushAmqp.prototype.publish = function (msg) {
   return this;
 };
 
-PushAmqp.prototype.close = function() {
+PushAmqp.prototype.close = function(callback) {
   this._q.destroy(/* ifUnused? ifEmpty? */);
+  if (callback) {
+    process.nextTick(callback);
+  }
 };
 
 DeclareAmqp.prototype.pushQueue = function (name, callback) {
@@ -113,8 +116,11 @@ PullAmqp.prototype.subscribe = function (callback) {
   return this;
 };
 
-PullAmqp.prototype.close = function() {
+PullAmqp.prototype.close = function(callback) {
   this._q.destroy(/* ifUnused? ifEmpty? */);
+  if (callback) {
+    process.nextTick(callback);
+  }
 };
 
 DeclareAmqp.prototype.pullQueue = function (name, callback) {
