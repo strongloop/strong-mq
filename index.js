@@ -1,16 +1,15 @@
 // clustermq
 
-var amqp = require("amqp");
-var assert = require("assert");
+var amqp = require('amqp');
+var assert = require('assert');
 
-var _ = require("underscore");
-var copy = _.clone;
+var copy = require('underscore').clone;
 
 // declaration of providers
 
 var providers = {};
 
-// options.provider: mandatory, one of "amqp"
+// options.provider: mandatory, one of 'amqp'
 // options.*: as supported by provider
 exports.declare = function (options) {
   return new providers[options.provider](options);
@@ -30,22 +29,22 @@ function DeclareAmqp(options) {
 }
 
 DeclareAmqp.prototype.open = function (callback) {
-  assert(!this._connection, "connectors can only be opened once");
+  assert(!this._connection, 'connectors can only be opened once');
 
   var c = this._connection = amqp.createConnection(this._connectOptions);
 
-  function on_ready() {
-    c.removeListener('error', on_error);
+  function onReady() {
+    c.removeListener('error', onError);
     callback();
   }
 
-  function on_error(err) {
-    c.removeListener('ready', on_ready);
+  function onError(err) {
+    c.removeListener('ready', onReady);
     callback(err);
   }
 
-  c.once('ready', on_ready);
-  c.once('error', on_error);
+  c.once('ready', onReady);
+  c.once('error', onError);
 
   return this;
 };
@@ -64,7 +63,7 @@ DeclareAmqp.prototype.close = function (callback) {
   return this;
 };
 
-// FIXME not clear where errors go... should we register for
+// FIXME(sroberts) not clear where errors go... should we register for
 // error event before every interaction? Can errors occur at
 // other times, necessitating a error handler for the whole
 // connection? Hm.

@@ -3,7 +3,7 @@
 .PHONY: test
 
 test:
-	@mocha
+	@npm test
 
 lint:
 	jshint *.js test
