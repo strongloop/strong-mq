@@ -16,3 +16,6 @@ jenkins-install:
 jenkins-test:
 	mocha -R xunit > xunit.xml
 
+README.html: README.md
+	marked -o $@ $^
+
