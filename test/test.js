@@ -16,7 +16,7 @@ describe('declaration', function () {
     assert.equal(mq.provider, 'amqp');
   });
 
-  it('should puke on invalid inputs', function () {
+  it('should throw on invalid inputs', function () {
     assert.throws(function () {
       cmq.declare();
     });
@@ -55,6 +55,34 @@ describe('opening amqp', function () {
     });
   });
 
+  it('should throw on multiple open', function (done) {
+    var mq = cmq.declare(AMQP);
+    mq.open(function (er) {
+      assert(!er);
+      assert.throws(function () {
+        mq.open();
+      });
+      done();
+    });
+  });
+
+  it('should throw on close when never opened', function () {
+    var mq = cmq.declare(AMQP);
+    assert.throws(function () {
+      mq.close();
+    });
+  });
+
+  it('should throw on close after closed', function (done) {
+    var mq = cmq.declare(AMQP);
+    mq.open(function (er) {
+      mq.close(done);
+      assert.throws(function () {
+        mq.close();
+      });
+    });
+  });
+
 });
 
 
@@ -68,7 +96,9 @@ describe('open and close work queues', function () {
   });
 
   afterEach(function (done) {
-    mq.close(done);
+    if(mq) {
+      mq.close(done);
+    }
   });
 
   it('should open and close a push queue', function (done) {
@@ -99,6 +129,21 @@ describe('open and close work queues', function () {
       if (er) return done(er);
       pullQueue.close(done);
     });
+  });
+
+  it('should throw on close after close', function (done) {
+    var pullQueue = mq.pullQueue('june', function (er) {
+      if (er) return done(er);
+      pullQueue.close(done);
+      assert.throws(function () {
+        pullQueue.close();
+      });
+    });
+  });
+
+  it.skip('should pass close errors to callback', function () {
+    // XXX(sroberts) I don't know how to cause errors, need to examine src
+    // more closely, or else mock
   });
 
 });

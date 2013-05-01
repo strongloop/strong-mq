@@ -39,16 +39,17 @@ DeclareAmqp.prototype.open = function (callback) {
 };
 
 DeclareAmqp.prototype.close = function (callback) {
-  if (this._connection) {
-    if (callback) {
-      this._connection.on('close', function (had_error) {
-        // discard had_error, it's boolean instead of an Error object
-        callback();
-      });
-    }
-    this._connection.end();
-    this._connection = null;
+  assert(this._connection, 'cannot close if not open');
+
+  if (callback) {
+    this._connection.once('close', function () {
+      // discard arg (had_error), it's boolean instead of an Error object
+      callback();
+    });
   }
+  this._connection.end();
+  this._connection = null;
+
   return this;
 };
 
@@ -85,7 +86,8 @@ function queueOpen (self, type, declaration, name, callback) {
 function queueClose (callback) {
   var q = this._q;
 
-  // XXX self._q = null
+  assert(q, 'cannot close queue if not open');
+
   function onDone() {
     q.removeListener('error', onError);
     callback();
@@ -102,6 +104,8 @@ function queueClose (callback) {
   }
 
   q.close();
+
+  this._q = null
 
   return this;
 }
