@@ -2,9 +2,7 @@ var assert = require("assert");
 var async = require("async");
 var cmq = require("../");
 
-var debug = true;
-
-if (debug) {
+if (false) {
   var dbg = console.log;
 } else {
   var dbg = function () {};
@@ -13,13 +11,12 @@ if (debug) {
 var AMQP = {provider:'amqp'};
 
 describe("declaration", function () {
-  it("declare amqp connector", function () {
+  it("should declare amqp connector", function () {
     var mq = cmq.declare(AMQP);
     assert.equal(mq.provider, 'amqp');
   });
 
   it("should puke on invalid inputs", function () {
-    // TODO convention for arg checking: assert?
     assert.throws(function () {
       cmq.declare();
     });
@@ -31,6 +28,7 @@ describe("declaration", function () {
     });
   });
 });
+
 
 describe("opening amqp", function () {
   it("should open and close with localhost url", function (done) {
@@ -49,7 +47,7 @@ describe("opening amqp", function () {
     });
   });
 
-  it("callback error on an invalid open", function (done) {
+  it("should callback with error on an invalid open", function (done) {
     var mq = cmq.declare({provider:'amqp', port:1});
     mq.open(function (err) {
       assert(err);
@@ -111,17 +109,39 @@ var connectAndOpen = function (options, qtype, qname, callback) {
   mq.open(function (err) {
     if (err) return callback(err);
 
-    mq[qtype].call(mq, qname, function (err, queue) {
-      if (err) { mq.close(); return callback(err); }
+    mq.on('error', function (er) {
+      dbg("ON connection", er);
+    });
+
+    var queue = mq[qtype].call(mq, qname, function (err) {
+      if (err) {
+        dbg("CB queue open", qtype, qname, err);
+        mq.close(function (err2) {
+          if (err2) {
+            dbg("CB connection close", qtype, qname, err2);
+          }
+          return callback(err);
+        });
+      }
 
       callback(err, {connection: mq, queue: queue});
     });
+    queue.on('error', function (er) {
+      dbg("ON queue", er);
+    });
+
   });
 };
 
 var closeAndDisconnect = function (queue, connection, callback) {
-  queue.close();
-  connection.close(callback);
+  dbg("queue close", queue.type, queue.name);
+  queue.close(function () {
+    dbg("connection close", queue.type, queue.name);
+    connection.close(function () {
+      dbg("connection closed");
+      callback();
+    });
+  });
 };
 
 describe("push and pull into work queues", function () {
@@ -152,13 +172,11 @@ describe("push and pull into work queues", function () {
 
   it("should have the queues already open", function () {
     assert(mq.push.connection);
-    assert(mq.push.queue._q);
-    // would like to do a type-of, or something, don't know what breaks
-    // encapuslation most, use of undocumented internals, or dependency on
-    // underlying instance type
-
+    assert(mq.push.queue.type === "push");
+    assert(mq.push.queue.name === "leonie");
     assert(mq.pull.connection);
-    assert(mq.pull.queue._q);
+    assert(mq.pull.queue.type === "pull");
+    assert(mq.pull.queue.name === "leonie");
   });
 
   it("should receive sent strings", function (done) {

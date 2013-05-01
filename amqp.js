@@ -12,6 +12,11 @@ function DeclareAmqp(provider, url, options) {
   this._connectOptions = url ? {url:url} : options;
 }
 
+// XXX don't rewrite .on(), be an event emitter
+DeclareAmqp.prototype.on = function (event, listener) {
+  this._connection.on(event, listener);
+};
+
 DeclareAmqp.prototype.open = function (callback) {
   assert(!this._connection, 'connectors can only be opened once');
 
@@ -47,48 +52,87 @@ DeclareAmqp.prototype.close = function (callback) {
   return this;
 };
 
-// FIXME(sroberts) not clear where errors go... should we register for
-// error event before every interaction? Can errors occur at
-// other times, necessitating a error handler for the whole
-// connection? Hm.
-
 // Get amqp connection for a queue
 function c(q) {
   return q._declaration._connection;
 }
 
-// callback with err, or (null, queue) when queue is ready
-function PushAmqp (declaration, name, callback) {
-  var self = this;
-  this._declaration = declaration;
-  this._q = c(this).queue(name, function () {
+// XXX factor common code out of push/pull
+
+// Common options when creating and destroying queues
+var CREATE_OPTIONS = {
+  autoDelete: true,
+};
+
+// Using these options causes an error event to be emitted if the q is in use
+// or non-empty, but the autoDelete flag appears to be a better way.
+var DESTROY_OPTIONS = {
+  //ifUnused: true,
+  //ifEmpty: true,
+};
+
+function queueOpen (self, type, declaration, name, callback) {
+  self.name = name;
+  self.type = type;
+  self._declaration = declaration;
+  self._q = c(self).queue(name, CREATE_OPTIONS, function () {
     callback(null, self);
   });
+  // XXX need to write test to force error, then catch event, and
+  // pass to callback. I think mismatch of queue type might work.
+};
+
+function queueClose (callback) {
+  var q = this._q;
+
+  if (callback) {
+    function onDone() {
+      q.removeListener('error', onError);
+      callback();
+    }
+
+    function onError(err) {
+      q.removeListener('close', onDone);
+      callback(err);
+    }
+
+    q.once('close', onDone);
+    q.once('error', onError);
+
+    q.close();
+  }
+
+  return this;
 }
+
+// XXX should be an EventEmitter
+function queueOn(event, listener) {
+  this._q.on(event, listener);
+};
+
+// callback with err, or (null, queue) when queue is ready
+function PushAmqp (declaration, name, callback) {
+  queueOpen(this, "push", declaration, name, callback);
+}
+
+PushAmqp.prototype.on = queueOn;
 
 PushAmqp.prototype.publish = function (msg) {
   c(this).publish(this._q.name, msg);
   return this;
 };
 
-PushAmqp.prototype.close = function(callback) {
-  this._q.destroy(/* ifUnused? ifEmpty? */);
-  if (callback) {
-    process.nextTick(callback);
-  }
-};
+PushAmqp.prototype.close = queueClose;
 
 DeclareAmqp.prototype.pushQueue = function (name, callback) {
   return new PushAmqp(this, name, callback);
 };
 
 function PullAmqp (declaration, name, callback) {
-  var self = this;
-  this._declaration = declaration;
-  this._q = c(this).queue(name, function () {
-    callback(null, self);
-  });
+  queueOpen(this, "pull", declaration, name, callback);
 }
+
+PullAmqp.prototype.on = queueOn;
 
 PullAmqp.prototype.subscribe = function (callback) {
   this._q.subscribe(/* ack? prefetchCount? */ function (msg) {
@@ -100,15 +144,9 @@ PullAmqp.prototype.subscribe = function (callback) {
   return this;
 };
 
-PullAmqp.prototype.close = function(callback) {
-  this._q.destroy(/* ifUnused? ifEmpty? */);
-  if (callback) {
-    process.nextTick(callback);
-  }
-};
+PullAmqp.prototype.close = queueClose;
 
 DeclareAmqp.prototype.pullQueue = function (name, callback) {
   return new PullAmqp(this, name, callback);
 };
-
 
