@@ -1,20 +1,19 @@
 // clustermq
 
 var copy = require('underscore').clone;
-
-var parse = require("url").parse;
+var parse = require('url').parse;
 
 // Attempt to lazy-load providers on reference
 
 function urlProvider(url) {
   var protocol = parse(url).protocol;
-  return protocol.split(":")[0];
+  return protocol.split(':')[0];
 }
 
 function extractProvider(options) {
   var provider;
   var url;
-  if (typeof options == "string") {
+  if (typeof options == 'string') {
     provider = urlProvider(options);
     url = options;
     options = null;
@@ -36,7 +35,7 @@ exports.declare = function (options) {
   var url = parsed[1];
   options = parsed[2];
   if (!providers[provider]) {
-    providers[provider] = require("./"+provider);
+    providers[provider] = require('./'+provider);
   }
   return new providers[provider](provider, url, options);
 };

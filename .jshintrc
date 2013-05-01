@@ -1,3 +1,5 @@
 {
-  "laxcomma": true
+  "es5": true
+  , "camelcase": true
+  , "quotmark": "single"
 }

@@ -18,7 +18,7 @@ DeclareAmqp.prototype.on = function (event, listener) {
 };
 
 DeclareAmqp.prototype.open = function (callback) {
-  assert(!this._connection, 'connectors can only be opened once');
+  assert(!this._connection, 'cannot open if already open');
 
   var c = this._connection = amqp.createConnection(this._connectOptions);
 
@@ -27,9 +27,9 @@ DeclareAmqp.prototype.open = function (callback) {
     callback();
   }
 
-  function onError(err) {
+  function onError(er) {
     c.removeListener('ready', onReady);
-    callback(err);
+    callback(er);
   }
 
   c.once('ready', onReady);
@@ -65,7 +65,7 @@ var CREATE_OPTIONS = {
 };
 
 // Using these options causes an error event to be emitted if the q is in use
-// or non-empty, but the autoDelete flag appears to be a better way.
+// or non-empty, so the autoDelete flag appears to be a better way.
 var DESTROY_OPTIONS = {
   //ifUnused: true,
   //ifEmpty: true,
@@ -80,27 +80,28 @@ function queueOpen (self, type, declaration, name, callback) {
   });
   // XXX need to write test to force error, then catch event, and
   // pass to callback. I think mismatch of queue type might work.
-};
+}
 
 function queueClose (callback) {
   var q = this._q;
 
+  // XXX self._q = null
+  function onDone() {
+    q.removeListener('error', onError);
+    callback();
+  }
+
+  function onError(er) {
+    q.removeListener('close', onDone);
+    callback(er);
+  }
+
   if (callback) {
-    function onDone() {
-      q.removeListener('error', onError);
-      callback();
-    }
-
-    function onError(err) {
-      q.removeListener('close', onDone);
-      callback(err);
-    }
-
     q.once('close', onDone);
     q.once('error', onError);
-
-    q.close();
   }
+
+  q.close();
 
   return this;
 }
@@ -108,11 +109,10 @@ function queueClose (callback) {
 // XXX should be an EventEmitter
 function queueOn(event, listener) {
   this._q.on(event, listener);
-};
+}
 
-// callback with err, or (null, queue) when queue is ready
 function PushAmqp (declaration, name, callback) {
-  queueOpen(this, "push", declaration, name, callback);
+  queueOpen(this, 'push', declaration, name, callback);
 }
 
 PushAmqp.prototype.on = queueOn;
@@ -129,7 +129,7 @@ DeclareAmqp.prototype.pushQueue = function (name, callback) {
 };
 
 function PullAmqp (declaration, name, callback) {
-  queueOpen(this, "pull", declaration, name, callback);
+  queueOpen(this, 'pull', declaration, name, callback);
 }
 
 PullAmqp.prototype.on = queueOn;

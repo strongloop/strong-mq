@@ -6,7 +6,7 @@ test:
 	@npm test
 
 lint:
-	jshint *.js test
+	@jshint *.js test
 
 jenkins-build: jenkins-install jenkins-test
 
