@@ -31,9 +31,9 @@ An example of connecting to a server and listening on a work queue:
 var connection = require('clustermq')
     .declare('amqp://localhost');
 
-connection.open(function (err, c) {
+connection.open(function (err) {
     assert(!err);
-    c.pushQueue(function (err, q) {
+    c.pushQueue(function (err) {
         q.subscribe(function (err, msg) {
             assert(!err);
             console.log(msg);
@@ -43,12 +43,16 @@ connection.open(function (err, c) {
 ```
 
 
-## Callbacks
+## Event: 'error'
+
+Asynchronous errors may be emitted as events from either a connection or a queue, once
+they have been succesfully opened. The nature of the errors emitted depends on the
+underlying provider.
 
 All callbacks follow the standard convention of the first argument being an `Error` object
-on failure, or null on success. Any other results will follow the error argument.
-
-Asynchronous errors are emitted as events.
+on failure, or null on success. Any other results will follow the error argument. If
+possible, errors associated with a method call will be passed to its callback, however,
+infelicities in the underlying provider may make this less reliable than hoped-for.
 
 
 ## Messages
@@ -119,7 +123,7 @@ Callsback with null when connection has been closed sucesfully, or an `Error` ob
 
 Returns a queue for pushing work items.
 
-Callsback with null on success, an `Error` object on failure.
+Callsback with null on success, or an `Error` object on failure.
 
 ### push.publish(msg)
 
@@ -127,13 +131,13 @@ Callsback with null on success, an `Error` object on failure.
 
 ### push.close(function callback(err))
 
-Callsback with null, an `Error` object on failure.
+Callsback with null, or an `Error` object on failure.
 
 ### connection.pullQueue(function callback(err))
 
 Returns a queue for pulling work items.
 
-Callsback with null on success, an `Error` object on failure.
+Callsback with null on success, or an `Error` object on failure.
 
 ### pull.subscribe(function callback(err, msg))
 
@@ -141,7 +145,7 @@ Callsback with null on success, an `Error` object on failure.
 
 ### pull.close(function callback(err))
 
-Callsback with null, an `Error` object on failure.
+Callsback with null, or an `Error` object on failure.
 
 ### queue.name {String}
 
@@ -162,7 +166,7 @@ XXX(sroberts) Can topics be empty?
 
 Returns a queue for publishing on topics.
 
-Callsback with null on success, an `Error` object on failure.
+Callsback with null on success, or an `Error` object on failure.
 
 ### pub.publish(msg, topic)
 
@@ -171,13 +175,13 @@ Callsback with null on success, an `Error` object on failure.
 
 ### pub.close(function callback(err))
 
-Callsback with null, an `Error` object on failure.
+Callsback with null, or an `Error` object on failure.
 
 ### connection.subQueue(function callback(err))
 
 Returns a queue for subscribing to topics.
 
-Callsback with null on success, an `Error` object on failure.
+Callsback with null on success, or an `Error` object on failure.
 
 ### sub.subscribe([topic,] function callback(err, msg))
 
@@ -193,7 +197,7 @@ topics? Hm, maybe Events would be better here:
 
 ### sub.close(function callback(err))
 
-Callsback with null, an `Error` object on failure.
+Callsback with null, or an `Error` object on failure.
 
 
 ## Provider: AMQP

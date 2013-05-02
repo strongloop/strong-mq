@@ -10,7 +10,7 @@ if (false) {
 
 var AMQP = {provider:'amqp'};
 
-describe('declaration', function () {
+describe('the api', function () {
   it('should declare amqp connector', function () {
     var mq = cmq.declare(AMQP);
     assert.equal(mq.provider, 'amqp');
@@ -30,7 +30,7 @@ describe('declaration', function () {
 });
 
 
-describe('opening amqp', function () {
+describe('amqp connections', function () {
   it('should open and close with localhost url', function (done) {
     var mq = cmq.declare('amqp://localhost');
     mq.open(function (er) {
@@ -101,7 +101,7 @@ describe('opening amqp', function () {
 
 
 
-describe('open and close work queues', function () {
+describe('amqp work queues', function () {
   var mq;
 
   beforeEach(function (done) {
@@ -153,6 +153,11 @@ describe('open and close work queues', function () {
         pullQueue.close();
       });
     });
+  });
+
+  it.skip('should pass open errors to callback', function () {
+    // XXX(sroberts) I don't know how to cause errors, need to examine src
+    // more closely, or else mock
   });
 
   it.skip('should pass close errors to callback', function () {
@@ -272,5 +277,14 @@ describe('push and pull into work queues', function () {
       done();
     });
   });
+
+  it('should receive sent buffers, as strings', function (done) {
+    mq.push.queue.publish(new Buffer('bonjour!'));
+    mq.pull.queue.subscribe(function (msg) {
+      assert.equal(msg, 'bonjour!');
+      done();
+    });
+  });
+
 });
 

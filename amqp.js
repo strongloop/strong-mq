@@ -97,8 +97,6 @@ function queueOpen (self, type, declaration, name, callback) {
     forwardEvent('error', self._q, self);
     callback(null, self);
   });
-  // XXX need to write test to force error, then catch event, and
-  // pass to callback. I think mismatch of queue type might work.
 }
 
 function queueClose (callback) {
