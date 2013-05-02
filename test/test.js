@@ -83,6 +83,20 @@ describe('opening amqp', function () {
     });
   });
 
+  it('should forward underlying errors', function (done) {
+    var mq = cmq.declare(AMQP);
+    mq.open(function (er) {
+      if(er) return done(er);
+
+      mq.once('error', function (er) {
+        mq.close();
+        assert(er === 'DIE');
+        done();
+      });
+      mq._connection.emit('error', 'DIE');
+    });
+  });
+
 });
 
 
@@ -144,6 +158,18 @@ describe('open and close work queues', function () {
   it.skip('should pass close errors to callback', function () {
     // XXX(sroberts) I don't know how to cause errors, need to examine src
     // more closely, or else mock
+  });
+
+  it('should forward underlying errors', function (done) {
+    var pullQueue = mq.pullQueue('june', function (er) {
+      if(er) return done(er);
+
+      pullQueue.once('error', function (er) {
+        assert(er === 'DIE');
+        pullQueue.close(done);
+      });
+      pullQueue._q.emit('error', 'DIE');
+    });
   });
 
 });

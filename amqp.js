@@ -4,6 +4,8 @@ module.exports = DeclareAmqp;
 
 var amqp = require('amqp');
 var assert = require('assert');
+var events = require('events');
+var util = require('util');
 
 function onceOnEvents(emitter, okEvent, callback)
 {
@@ -23,6 +25,11 @@ function onceOnEvents(emitter, okEvent, callback)
   return emitter;
 }
 
+function forwardEvent(name, from, to)
+{
+  from.on(name, to.emit.bind(to, name));
+}
+
 //-- Connection
 
 function DeclareAmqp(provider, url, options) {
@@ -30,10 +37,7 @@ function DeclareAmqp(provider, url, options) {
   this._connectOptions = url ? {url:url} : options;
 }
 
-// XXX don't rewrite .on(), be an event emitter
-DeclareAmqp.prototype.on = function (event, listener) {
-  this._connection.on(event, listener);
-};
+util.inherits(DeclareAmqp, events.EventEmitter);
 
 DeclareAmqp.prototype.open = function (callback) {
   assert(!this._connection, 'cannot open if already open');
@@ -41,7 +45,14 @@ DeclareAmqp.prototype.open = function (callback) {
 
   this._connection = amqp.createConnection(this._connectOptions);
 
-  onceOnEvents(this._connection, 'ready', callback);
+  var self = this;
+
+  onceOnEvents(this._connection, 'ready', function (er) {
+    if (!er) {
+      forwardEvent('error', self._connection, self);
+    }
+    callback(er);
+  });
 
   return this;
 };
@@ -83,6 +94,7 @@ function queueOpen (self, type, declaration, name, callback) {
   self.type = type;
   self._declaration = declaration;
   self._q = c(self).queue(name, CREATE_OPTIONS, function () {
+    forwardEvent('error', self._q, self);
     callback(null, self);
   });
   // XXX need to write test to force error, then catch event, and
@@ -97,21 +109,16 @@ function queueClose (callback) {
   }
 
   this._q.close();
-  this._q = null
+  this._q = null;
 
   return this;
-}
-
-// XXX should be an EventEmitter
-function queueOn(event, listener) {
-  this._q.on(event, listener);
 }
 
 function PushAmqp (declaration, name, callback) {
   queueOpen(this, 'push', declaration, name, callback);
 }
 
-PushAmqp.prototype.on = queueOn;
+util.inherits(PushAmqp, events.EventEmitter);
 
 PushAmqp.prototype.publish = function (msg) {
   c(this).publish(this._q.name, msg);
@@ -128,7 +135,7 @@ function PullAmqp (declaration, name, callback) {
   queueOpen(this, 'pull', declaration, name, callback);
 }
 
-PullAmqp.prototype.on = queueOn;
+util.inherits(PullAmqp, events.EventEmitter);
 
 PullAmqp.prototype.subscribe = function (callback) {
   this._q.subscribe(/* ack? prefetchCount? */ function (msg) {
