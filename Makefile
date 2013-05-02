@@ -1,6 +1,8 @@
 # Makefile
 
-.PHONY: test
+.PHONY: test lint default
+
+default: lint test
 
 test:
 	@npm test
