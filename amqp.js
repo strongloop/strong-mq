@@ -5,8 +5,26 @@ module.exports = DeclareAmqp;
 var amqp = require('amqp');
 var assert = require('assert');
 
-// Supported options are as for amqp.createConnection():
-//   host, port, login, password, vhost
+function onceOnEvents(emitter, okEvent, callback)
+{
+  function onOk() {
+    emitter.removeListener('error', onEr);
+    callback();
+  }
+
+  function onEr(er) {
+    emitter.removeListener('ready', onOk);
+    callback(er);
+  }
+
+  emitter.once(okEvent, onOk);
+  emitter.once('error', onEr);
+
+  return emitter;
+}
+
+//-- Connection
+
 function DeclareAmqp(provider, url, options) {
   this.provider = provider;
   this._connectOptions = url ? {url:url} : options;
@@ -19,21 +37,11 @@ DeclareAmqp.prototype.on = function (event, listener) {
 
 DeclareAmqp.prototype.open = function (callback) {
   assert(!this._connection, 'cannot open if already open');
+  assert(callback);
 
-  var c = this._connection = amqp.createConnection(this._connectOptions);
+  this._connection = amqp.createConnection(this._connectOptions);
 
-  function onReady() {
-    c.removeListener('error', onError);
-    callback();
-  }
-
-  function onError(er) {
-    c.removeListener('ready', onReady);
-    callback(er);
-  }
-
-  c.once('ready', onReady);
-  c.once('error', onError);
+  onceOnEvents(this._connection, 'ready', callback);
 
   return this;
 };
@@ -42,23 +50,21 @@ DeclareAmqp.prototype.close = function (callback) {
   assert(this._connection, 'cannot close if not open');
 
   if (callback) {
-    this._connection.once('close', function () {
-      // discard arg (had_error), it's boolean instead of an Error object
-      callback();
-    });
+    onceOnEvents(this._connection, 'close', callback);
   }
+
   this._connection.end();
   this._connection = null;
 
   return this;
 };
 
+//-- Push/Pull Queue
+
 // Get amqp connection for a queue
 function c(q) {
   return q._declaration._connection;
 }
-
-// XXX factor common code out of push/pull
 
 // Common options when creating and destroying queues
 var CREATE_OPTIONS = {
@@ -84,27 +90,13 @@ function queueOpen (self, type, declaration, name, callback) {
 }
 
 function queueClose (callback) {
-  var q = this._q;
-
-  assert(q, 'cannot close queue if not open');
-
-  function onDone() {
-    q.removeListener('error', onError);
-    callback();
-  }
-
-  function onError(er) {
-    q.removeListener('close', onDone);
-    callback(er);
-  }
+  assert(this._q, 'cannot close queue if not open');
 
   if (callback) {
-    q.once('close', onDone);
-    q.once('error', onError);
+    onceOnEvents(this._q, 'close', callback);
   }
 
-  q.close();
-
+  this._q.close();
   this._q = null
 
   return this;
