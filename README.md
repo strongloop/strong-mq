@@ -143,6 +143,13 @@ Callsback with null on success, an `Error` object on failure.
 
 Callsback with null, an `Error` object on failure.
 
+### queue.name {String}
+
+Name used to create queue.
+
+### queue.type {String}
+
+Either 'push', or 'pull'.
 
 ## Topic queue (pub/sub)
 
