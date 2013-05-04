@@ -45,14 +45,9 @@ connection.open(function (err) {
 
 ## Event: 'error'
 
-Asynchronous errors may be emitted as events from either a connection or a queue, once
+Errors may be emitted as events from either a connection or a queue, once
 they have been succesfully opened. The nature of the errors emitted depends on the
 underlying provider.
-
-All callbacks follow the standard convention of the first argument being an `Error` object
-on failure, or null on success. Any other results will follow the error argument. If
-possible, errors associated with a method call will be passed to its callback, however,
-infelicities in the underlying provider may make this less reliable than hoped-for.
 
 
 ## Messages
@@ -88,12 +83,6 @@ Supported options, other than `provider`, depend on the provider:
 * `port` {String} Port to connect to (if supported by provider)
 * `...` As supported by the provider
 
-The connection object is an `EventEmitter`:
-
-* Event: 'error' {Error} Errors during connection open and close will be passed to the
-  callback, but asynchronous errors are emitted. The specific reasons for the error
-  will depend on the provider.
-
 Example of declaring amqp, using an options object:
 
     connection = clustemq.declare({
@@ -107,45 +96,57 @@ Example of declaring amqp, using a URL:
     connection = clusermq.declare('amqp://guest@localhost');
 
 
-### connection.open(function callback(err))
+### connection.open(callback)
 
-Callsback with null when connection is ready for use, or an `Error` object on failure.
+Callsback when connection is ready for use.
+
+Example:
+
+    connection.open(function ()
+      // ... use connection
+    }).on('error', function () {
+      // ... handle error
+    });
 
 
-### connection.close(function callback(err))
+### connection.close(callback)
 
-Callsback with null when connection has been closed sucesfully, or an `Error` object on failure.
+Callsback when connection has been closed.
 
 
 ## Work queues (push/pull)
 
-### connection.pushQueue(function callback(err))
+### connection.pushQueue(callback)
 
 Returns a queue for pushing work items.
 
-Callsback with null on success, or an `Error` object on failure.
+Callsback when queue is ready for use.
 
 ### push.publish(msg)
 
 * `msg` {Object} Message to push onto the queue
 
-### push.close(function callback(err))
+### push.close(callback)
 
-Callsback with null, or an `Error` object on failure.
+Callsback when queue has been closed. Closing the connection before the queue has been
+closed can lead to errors.
 
-### connection.pullQueue(function callback(err))
+### connection.pullQueue(callback)
 
 Returns a queue for pulling work items.
 
-Callsback with null on success, or an `Error` object on failure.
+Callsback when queue is ready for use.
 
-### pull.subscribe(function callback(err, msg))
+### pull.subscribe(callback)
+
+Callsback with `msg` when a message is received.
 
 * `msg` {Object} Message pulled off the queue
 
-### pull.close(function callback(err))
+### pull.close(callback)
 
-Callsback with null, or an `Error` object on failure.
+Callsback when queue has been closed. Closing the connection before the queue has been
+closed can lead to errors.
 
 ### queue.name {String}
 
@@ -159,45 +160,53 @@ Either 'push', or 'pull'.
 
 Topics are dot-seperated words with wildcards.
 
-XXX(sroberts) Fill in exact syntax.
-XXX(sroberts) Can topics be empty?
+- `*` matches any _single_ word
+- `#` matches zero or more words
+- `''` is a zero-length topic, it can be matches with itself, or with `#`
 
-### connection.pubQueue(function callback(err))
+FIXME(sroberts) Above is AMQP syntax, will have to see if its too specific. We might need
+to make `*` be the only wildcard, with the meaning of AMQP `#`.
+
+### connection.pubQueue(callback)
 
 Returns a queue for publishing on topics.
 
-Callsback with null on success, or an `Error` object on failure.
+Callsback when queue is ready for use.
 
 ### pub.publish(msg, topic)
 
 * `msg` {Object} Message to publish onto the queue
 * `topic` {String} Topic of message, default is `''`
 
-### pub.close(function callback(err))
+### pub.close(callback)
 
-Callsback with null, or an `Error` object on failure.
+Callsback when queue has been closed. Closing the connection before the queue has been
+closed can lead to errors.
 
-### connection.subQueue(function callback(err))
+### connection.subQueue(callback)
 
 Returns a queue for subscribing to topics.
 
 Callsback with null on success, or an `Error` object on failure.
 
-### sub.subscribe([topic,] function callback(err, msg))
+### sub.subscribe([topic,] callback)
 
-* `msg` {Object} Message subed off the queue
 * `topic` {String} Topic of message, may contain wildcards, default is `''`
 
-XXX(sroberts) Multiple subscribes lead to a callback per topic? Even with duplicate
-topics? Hm, maybe Events would be better here:
+Callback will be passed a `msg`.
+
+* `msg` {Object} Message subed off the queue
+
+XXX(sroberts) Hm, maybe Events would be better here:
 
     sub.subscribe('that.*')
       .subscribe('this.*')
-      .on('receive', function callback(msg) { ... })
+      .on('data', function callback(msg) { ... })
 
-### sub.close(function callback(err))
+### sub.close(callback)
 
-Callsback with null, or an `Error` object on failure.
+Callsback when queue has been closed. Closing the connection before the queue has been
+closed can lead to errors.
 
 
 ## Provider: AMQP

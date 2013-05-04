@@ -7,24 +7,6 @@ var assert = require('assert');
 var events = require('events');
 var util = require('util');
 
-function onceOnEvents(emitter, okEvent, callback)
-{
-  function onOk() {
-    emitter.removeListener('error', onEr);
-    callback();
-  }
-
-  function onEr(er) {
-    emitter.removeListener('ready', onOk);
-    callback(er);
-  }
-
-  emitter.once(okEvent, onOk);
-  emitter.once('error', onEr);
-
-  return emitter;
-}
-
 function forwardEvent(name, from, to)
 {
   from.on(name, to.emit.bind(to, name));
@@ -34,47 +16,39 @@ function forwardEvent(name, from, to)
 
 function DeclareAmqp(provider, url, options) {
   this.provider = provider;
-  this._connectOptions = url ? {url:url} : options;
+  options = url ? {url:url} : options;
+  amqp.Connection.call(this, options);
 }
 
-util.inherits(DeclareAmqp, events.EventEmitter);
+util.inherits(DeclareAmqp, amqp.Connection);
 
 DeclareAmqp.prototype.open = function (callback) {
-  assert(!this._connection, 'cannot open if already open');
+  //XXX assert(!this._connection, 'cannot open if already open');
   assert(callback);
-
-  this._connection = amqp.createConnection(this._connectOptions);
-
   var self = this;
-
-  onceOnEvents(this._connection, 'ready', function (er) {
-    if (!er) {
-      forwardEvent('error', self._connection, self);
-    }
-    callback(er);
-  });
-
+  this.once('ready', callback);
+  this.connect();
   return this;
 };
 
 DeclareAmqp.prototype.close = function (callback) {
-  assert(this._connection, 'cannot close if not open');
-
+  //XXXassert(this._connection, 'cannot close if not open');
   if (callback) {
-    onceOnEvents(this._connection, 'close', callback);
+    this.once('close', function () {
+      callback(); // discard the arguments
+    });
   }
-
-  this._connection.end();
-  this._connection = null;
-
+  this.end();
   return this;
 };
+
+// XXX override .emit(), and filter out connection reset events after close?
 
 //-- Push/Pull Queue
 
 // Get amqp connection for a queue
 function c(q) {
-  return q._declaration._connection;
+  return q._connection;
 }
 
 // Common options when creating and destroying queues
@@ -89,21 +63,21 @@ var DESTROY_OPTIONS = {
   //ifEmpty: true,
 };
 
-function queueOpen (self, type, declaration, name, callback) {
+function queueOpen (self, type, connection, name, callback) {
   self.name = name;
   self.type = type;
-  self._declaration = declaration;
+  self._connection = connection;
   self._q = c(self).queue(name, CREATE_OPTIONS, function () {
-    forwardEvent('error', self._q, self);
-    callback(null, self);
+    callback(); // discard arguments from underlying cb
   });
+  forwardEvent('error', self._q, self);
 }
 
 function queueClose (callback) {
   assert(this._q, 'cannot close queue if not open');
 
   if (callback) {
-    onceOnEvents(this._q, 'close', callback);
+    this._q.once('close', callback);
   }
 
   this._q.close();

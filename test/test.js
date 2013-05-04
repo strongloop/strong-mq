@@ -31,25 +31,26 @@ describe('the api', function () {
 
 
 describe('amqp connections', function () {
+  function openAndClose(options, done) {
+    var mq = cmq.declare(options);
+    mq.open(function () {
+      mq.close(function () { done(); });
+    }).on('error', done);
+  }
+
   it('should open and close with localhost url', function (done) {
-    var mq = cmq.declare('amqp://localhost');
-    mq.open(function (er) {
-      if (er) return done(er);
-      mq.close(done);
-    });
+    openAndClose('amqp://localhost', done);
   });
 
   it('should open and close with default options', function (done) {
-    var mq = cmq.declare(AMQP);
-    mq.open(function (er) {
-      if (er) return done(er);
-      mq.close(done);
-    });
+    openAndClose(AMQP, done);
   });
 
-  it('should callback with error on a connect failure', function (done) {
+  it('should error on a connect failure', function (done) {
     var mq = cmq.declare({provider:'amqp', port:1});
-    mq.open(function (er) {
+    mq.open(function () {
+      assert(false); // unreachable on failure
+    }).on('error', function (er) {
       assert(er);
       done();
     });
@@ -66,14 +67,14 @@ describe('amqp connections', function () {
     });
   });
 
-  it('should throw on close when never opened', function () {
+  it.skip('should throw on close when never opened', function () {
     var mq = cmq.declare(AMQP);
     assert.throws(function () {
       mq.close();
     });
   });
 
-  it('should throw on close after closed', function (done) {
+  it.skip('should throw on close after closed', function (done) {
     var mq = cmq.declare(AMQP);
     mq.open(function (er) {
       mq.close(done);
@@ -83,22 +84,7 @@ describe('amqp connections', function () {
     });
   });
 
-  it('should forward underlying errors', function (done) {
-    var mq = cmq.declare(AMQP);
-    mq.open(function (er) {
-      if(er) return done(er);
-
-      mq.once('error', function (er) {
-        mq.close();
-        assert(er === 'DIE');
-        done();
-      });
-      mq._connection.emit('error', 'DIE');
-    });
-  });
-
 });
-
 
 
 describe('amqp work queues', function () {
@@ -153,16 +139,6 @@ describe('amqp work queues', function () {
         pullQueue.close();
       });
     });
-  });
-
-  it.skip('should pass open errors to callback', function () {
-    // XXX(sroberts) I don't know how to cause errors, need to examine src
-    // more closely, or else mock
-  });
-
-  it.skip('should pass close errors to callback', function () {
-    // XXX(sroberts) I don't know how to cause errors, need to examine src
-    // more closely, or else mock
   });
 
   it('should forward underlying errors', function (done) {
