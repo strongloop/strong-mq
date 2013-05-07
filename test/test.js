@@ -147,7 +147,7 @@ describe('amqp work queues', function () {
 
       pullQueue.once('error', function (er) {
         assert(er === 'DIE');
-        pullQueue.close(done);
+        done();
       });
       pullQueue._q.emit('error', 'DIE');
     });
@@ -187,13 +187,10 @@ var connectAndOpen = function (options, qtype, qname, callback) {
 
 var closeAndDisconnect = function (queue, connection, callback) {
   dbg('queue close', queue.type, queue.name);
-  queue.close(function () {
-    dbg('connection close', queue.type, queue.name);
     connection.close(function () {
       dbg('connection closed');
       callback();
     });
-  });
 };
 
 describe('push and pull into work queues', function () {
