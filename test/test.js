@@ -256,6 +256,8 @@ describe('push and pull into work queues', function() {
   it('should receive sent buffers, as strings', function(done) {
     mq.push.queue.publish(new Buffer('bonjour!'));
     mq.pull.queue.subscribe(function(msg) {
+      // XXX actually, sent buffers AND strings are received as buffers, which
+      // test as equal to strings
       assert.equal(msg, 'bonjour!');
       done();
     });
@@ -263,3 +265,57 @@ describe('push and pull into work queues', function() {
 
 });
 
+describe('pub/sub', function() {
+  it('should open and close', function(done) {
+    async.series([
+      function(callback) {
+        connectAndOpen(AMQP, 'pubQueue', 'leonie', callback);
+      },
+      function(callback) {
+        connectAndOpen(AMQP, 'subQueue', 'leonie', callback);
+      }
+    ], function(er, results) {
+      if (er) return done(er);
+      var pub = results[0];
+      var sub = results[1];
+      assert(pub.queue.type == 'pub');
+      assert(sub.queue.type == 'sub');
+      async.series([
+        function(callback) {
+          closeAndDisconnect(pub.queue, pub.connection, callback); },
+        function(callback) {
+          closeAndDisconnect(sub.queue, sub.connection, callback); }
+      ], done);
+    });
+  });
+
+  it('should pub and sub', function(done) {
+    async.series([
+      function(callback) {
+        connectAndOpen(AMQP, 'pubQueue', 'leonie', callback);
+      },
+      function(callback) {
+        connectAndOpen(AMQP, 'subQueue', 'leonie', callback);
+      }
+    ], function(er, results) {
+      if (er) return done(er);
+      var pub = results[0];
+      var sub = results[1];
+
+      process.nextTick(function() {
+        pub.queue.publish('quelle affaire', 'some.thing');
+      });
+
+      sub.queue.subscribe('some.*', function(msg) {
+        assert(msg == 'quelle affaire');
+        async.series([
+          function(callback) {
+            closeAndDisconnect(pub.queue, pub.connection, callback); },
+          function(callback) {
+            closeAndDisconnect(sub.queue, sub.connection, callback); }
+        ], done);
+      });
+    });
+  });
+
+});

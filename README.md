@@ -47,9 +47,8 @@ XXX(sam) use cluster in example
 
 ## Event: 'error'
 
-Errors may be emitted as events from either a connection or a queue, once
-they have been succesfully opened. The nature of the errors emitted depends on the
-underlying provider.
+Errors may be emitted as events from either a connection or a queue, once they have been
+succesfully opened. The nature of the errors emitted depends on the underlying provider.
 
 
 ## Messages
@@ -98,7 +97,7 @@ Example of declaring amqp, using a URL:
     connection = clusermq.create('amqp://guest@localhost');
 
 
-### connection.open(callback)
+### connection.open([callback])
 
 Callsback when connection is ready for use.
 
@@ -114,7 +113,6 @@ Example:
 ### connection.close(callback)
 
 Callsback when connection has been closed.
-
 
 ## Work queues (push/pull)
 
@@ -191,24 +189,26 @@ Returns a queue for subscribing to topics.
 
 Callsback with null on success, or an `Error` object on failure.
 
-### sub.subscribe([topic,] callback)
+### sub.subscribe(topic[, callback])
 
 * `topic` {String} Topic of message, may contain wildcards, default is `''`
 
-Callback will be passed a `msg`.
-
-* `msg` {Object} Message subed off the queue
-
-XXX(sroberts) Hm, maybe Events would be better here:
+Callback will be registered with the `'message'` event.
 
     sub.subscribe('that.*')
       .subscribe('this.*')
-      .on('data', function callback(msg) { ... })
+      .on('message', function callback(msg) { ... });
 
 ### sub.close(callback)
 
 Callsback when queue has been closed. Closing the connection before the queue has been
 closed can lead to errors.
+
+### Event: 'message'
+
+* `msg` {Object} Message received off the queue
+
+Event receives a `msg` object.
 
 
 ## Provider: AMQP

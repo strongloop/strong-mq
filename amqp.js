@@ -86,8 +86,8 @@ function queueClose(callback) {
   return this;
 }
 
-function PushAmqp(declaration, name, callback) {
-  queueOpen(this, 'push', declaration, name, callback);
+function PushAmqp(connection, name, callback) {
+  queueOpen(this, 'push', connection, name, callback);
 }
 
 util.inherits(PushAmqp, events.EventEmitter);
@@ -103,8 +103,8 @@ CreateAmqp.prototype.pushQueue = function(name, callback) {
   return new PushAmqp(this, name, callback);
 };
 
-function PullAmqp(declaration, name, callback) {
-  queueOpen(this, 'pull', declaration, name, callback);
+function PullAmqp(connection, name, callback) {
+  queueOpen(this, 'pull', connection, name, callback);
 }
 
 util.inherits(PullAmqp, events.EventEmitter);
@@ -123,5 +123,65 @@ PullAmqp.prototype.close = queueClose;
 
 CreateAmqp.prototype.pullQueue = function(name, callback) {
   return new PullAmqp(this, name, callback);
+};
+
+
+
+//-- Pub/Sub Queue
+
+function PubAmqp(connection, name, callback) {
+  this._connection = connection;
+  this.name = name;
+  this.type = 'pub';
+  this._q = c(this).exchange(name,
+    {autoDelete: true, type: 'topic'}, function() {
+    callback();
+  });
+}
+
+util.inherits(PubAmqp, events.EventEmitter);
+
+PubAmqp.prototype.publish = function(msg, topic) {
+  this._q.publish(topic, msg);
+  return this;
+};
+
+PubAmqp.prototype.close = queueClose;
+
+CreateAmqp.prototype.pubQueue = function(name, callback) {
+  return new PubAmqp(this, name, callback);
+};
+
+function SubAmqp(connection, name, callback) {
+  var self = this;
+  this._connection = connection;
+  this.name = name;
+  this.type = 'sub';
+  this._q = c(this).queue('', {autoDelete: true, exclusive: true}, function(q) {
+    callback();
+  });
+  this._q.subscribe(function(msg) {
+    if (msg.data && msg.contentType)
+      msg = msg.data; // non-json
+    // else msg is already-parsed json
+    self.emit('message', msg);
+  });
+  //onceOnEvents(this._q, 'queueBindOk', callback);
+}
+
+util.inherits(SubAmqp, events.EventEmitter);
+
+SubAmqp.prototype.subscribe = function(pattern, callback) {
+  this._q.bind(this.name, pattern);
+  if (callback) {
+    this.on('message', callback);
+  }
+  return this;
+};
+
+SubAmqp.prototype.close = queueClose;
+
+CreateAmqp.prototype.subQueue = function(name, callback) {
+  return new SubAmqp(this, name, callback);
 };
 
