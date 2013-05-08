@@ -29,7 +29,7 @@ An example of connecting to a server and listening on a work queue:
 
 ```javascript
 var connection = require('clustermq')
-    .declare('amqp://localhost');
+    .create('amqp://localhost');
 
 connection.open(function (err) {
     assert(!err);
@@ -41,6 +41,8 @@ connection.open(function (err) {
     });
 });
 ```
+
+XXX(sam) use cluster in example
 
 
 ## Event: 'error'
@@ -64,10 +66,10 @@ be persistent across restarts of the queue broker, depending on the provider.
 
 ## Connections
 
-### clustermq.declare(options|url)
+### clustermq.create(options|url)
 
 Returns a connection object for a specific provider, configuration can
-be declared using a options object, or a url:
+be created using a options object, or a url:
 
 * `options` {Object}
 * `url` {provider://...}
@@ -85,7 +87,7 @@ Supported options, other than `provider`, depend on the provider:
 
 Example of declaring amqp, using an options object:
 
-    connection = clustemq.declare({
+    connection = clustemq.create({
         provider: 'amqp',
         host: 'localhost',
         user: 'guest',
@@ -93,7 +95,7 @@ Example of declaring amqp, using an options object:
 
 Example of declaring amqp, using a URL:
 
-    connection = clusermq.declare('amqp://guest@localhost');
+    connection = clusermq.create('amqp://guest@localhost');
 
 
 ### connection.open(callback)

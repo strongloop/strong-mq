@@ -1,6 +1,6 @@
 // Provider: AMQP
 
-module.exports = DeclareAmqp;
+module.exports = CreateAmqp;
 
 var amqp = require('amqp');
 var assert = require('assert');
@@ -14,15 +14,15 @@ function forwardEvent(name, from, to)
 
 //-- Connection
 
-function DeclareAmqp(provider, url, options) {
+function CreateAmqp(provider, url, options) {
   this.provider = provider;
   options = url ? {url:url} : options;
   amqp.Connection.call(this, options);
 }
 
-util.inherits(DeclareAmqp, amqp.Connection);
+util.inherits(CreateAmqp, amqp.Connection);
 
-DeclareAmqp.prototype.open = function (callback) {
+CreateAmqp.prototype.open = function (callback) {
   //XXX assert(!this._connection, 'cannot open if already open');
   assert(callback);
   var self = this;
@@ -31,7 +31,7 @@ DeclareAmqp.prototype.open = function (callback) {
   return this;
 };
 
-DeclareAmqp.prototype.close = function (callback) {
+CreateAmqp.prototype.close = function (callback) {
   //XXXassert(this._connection, 'cannot close if not open');
   if (callback) {
     this.once('close', function () {
@@ -99,7 +99,7 @@ PushAmqp.prototype.publish = function (msg) {
 
 PushAmqp.prototype.close = queueClose;
 
-DeclareAmqp.prototype.pushQueue = function (name, callback) {
+CreateAmqp.prototype.pushQueue = function (name, callback) {
   return new PushAmqp(this, name, callback);
 };
 
@@ -121,7 +121,7 @@ PullAmqp.prototype.subscribe = function (callback) {
 
 PullAmqp.prototype.close = queueClose;
 
-DeclareAmqp.prototype.pullQueue = function (name, callback) {
+CreateAmqp.prototype.pullQueue = function (name, callback) {
   return new PullAmqp(this, name, callback);
 };
 

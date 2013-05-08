@@ -29,7 +29,7 @@ function extractProvider(options) {
 
 var providers = {};
 
-exports.declare = function (options) {
+exports.create = function (options) {
   var parsed = extractProvider(options);
   var provider = parsed[0];
   var url = parsed[1];

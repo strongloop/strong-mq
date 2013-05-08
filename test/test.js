@@ -11,20 +11,20 @@ if (false) {
 var AMQP = {provider:'amqp'};
 
 describe('the api', function () {
-  it('should declare amqp connector', function () {
-    var mq = cmq.declare(AMQP);
+  it('should create amqp connector', function () {
+    var mq = cmq.create(AMQP);
     assert.equal(mq.provider, 'amqp');
   });
 
   it('should throw on invalid inputs', function () {
     assert.throws(function () {
-      cmq.declare();
+      cmq.create();
     });
     assert.throws(function () {
-      cmq.declare({});
+      cmq.create({});
     });
     assert.throws(function () {
-      cmq.declare({provider:'no such provider'});
+      cmq.create({provider:'no such provider'});
     });
   });
 });
@@ -32,7 +32,7 @@ describe('the api', function () {
 
 describe('amqp connections', function () {
   function openAndClose(options, done) {
-    var mq = cmq.declare(options);
+    var mq = cmq.create(options);
     mq.open(function () {
       mq.close(function () { done(); });
     }).on('error', done);
@@ -47,7 +47,7 @@ describe('amqp connections', function () {
   });
 
   it('should error on a connect failure', function (done) {
-    var mq = cmq.declare({provider:'amqp', port:1});
+    var mq = cmq.create({provider:'amqp', port:1});
     mq.open(function () {
       assert(false); // unreachable on failure
     }).on('error', function (er) {
@@ -57,7 +57,7 @@ describe('amqp connections', function () {
   });
 
   it('should throw on multiple open', function (done) {
-    var mq = cmq.declare(AMQP);
+    var mq = cmq.create(AMQP);
     mq.open(function (er) {
       assert(!er);
       assert.throws(function () {
@@ -68,14 +68,14 @@ describe('amqp connections', function () {
   });
 
   it.skip('should throw on close when never opened', function () {
-    var mq = cmq.declare(AMQP);
+    var mq = cmq.create(AMQP);
     assert.throws(function () {
       mq.close();
     });
   });
 
   it.skip('should throw on close after closed', function (done) {
-    var mq = cmq.declare(AMQP);
+    var mq = cmq.create(AMQP);
     mq.open(function (er) {
       mq.close(done);
       assert.throws(function () {
@@ -91,7 +91,7 @@ describe('amqp work queues', function () {
   var mq;
 
   beforeEach(function (done) {
-    mq = cmq.declare(AMQP);
+    mq = cmq.create(AMQP);
     mq.open(done);
   });
 
@@ -156,7 +156,7 @@ describe('amqp work queues', function () {
 });
 
 var connectAndOpen = function (options, qtype, qname, callback) {
-  var mq = cmq.declare(options);
+  var mq = cmq.create(options);
 
   mq.open(function (er) {
     if (er) return callback(er);
