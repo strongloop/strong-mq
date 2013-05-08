@@ -16,11 +16,12 @@
   },
   "dependencies": {
     "amqp": "latest"
+    , "underscore": "latest"
   },
   "devDependencies": {
     "mocha": "latest"
     , "async": "latest"
-    , "underscore": "latest"
+    , "jshint": "latest"
   },
   "engines": {
     "node": "*"
