@@ -1,5 +1,7 @@
 # Makefile
 
+-include local.mk
+
 .PHONY: test lint default
 
 default: lint test
