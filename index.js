@@ -29,13 +29,13 @@ function extractProvider(options) {
 
 var providers = {};
 
-exports.create = function (options) {
+exports.create = function(options) {
   var parsed = extractProvider(options);
   var provider = parsed[0];
   var url = parsed[1];
   options = parsed[2];
   if (!providers[provider]) {
-    providers[provider] = require('./'+provider);
+    providers[provider] = require('./' + provider);
   }
   return new providers[provider](provider, url, options);
 };

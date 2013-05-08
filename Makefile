@@ -10,6 +10,9 @@ test:
 lint:
 	@jshint *.js test
 
+glint:
+	@gjslint --nojsdoc *.js test/*.js
+
 jenkins-build: jenkins-install jenkins-test
 
 jenkins-install:
