@@ -158,14 +158,7 @@ Either 'push', or 'pull'.
 
 ## Topic queue (pub/sub)
 
-Topics are dot-seperated words with wildcards.
-
-- `*` matches any _single_ word
-- `#` matches zero or more words
-- `''` is a zero-length topic, it can be matches with itself, or with `#`
-
-FIXME(sroberts) Above is AMQP syntax, will have to see if its too specific. We might need
-to make `*` be the only wildcard, with the meaning of AMQP `#`.
+Topics are dot-separated words. Subscriptions match leading words.
 
 ### connection.pubQueue(callback)
 

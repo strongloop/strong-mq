@@ -306,7 +306,7 @@ describe('pub/sub', function() {
         pub.queue.publish('quelle affaire', 'some.thing');
       });
 
-      sub.queue.subscribe('some.*', function(msg) {
+      sub.queue.subscribe('some', function(msg) {
         assert(msg == 'quelle affaire');
         async.series([
           function(callback) {

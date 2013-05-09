@@ -172,7 +172,10 @@ function SubAmqp(connection, name, callback) {
 util.inherits(SubAmqp, events.EventEmitter);
 
 SubAmqp.prototype.subscribe = function(pattern, callback) {
-  this._q.bind(this.name, pattern);
+  assert(pattern.indexOf('*') < 0);
+  assert(pattern.indexOf('#') < 0);
+
+  this._q.bind(this.name, pattern + '.#');
   if (callback) {
     this.on('message', callback);
   }
@@ -184,4 +187,3 @@ SubAmqp.prototype.close = queueClose;
 CreateAmqp.prototype.subQueue = function(name, callback) {
   return new SubAmqp(this, name, callback);
 };
-
