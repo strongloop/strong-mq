@@ -30,7 +30,9 @@ function extractProvider(options) {
 var providers = {};
 
 exports.create = function(options) {
-  var parsed = extractProvider(options);
+  var parsed = extractProvider(options || {
+    provider: 'native'
+  });
   var provider = parsed[0];
   var url = parsed[1];
   options = parsed[2];
