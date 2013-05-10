@@ -1,6 +1,10 @@
 var assert = require('assert');
 var async = require('async');
+var os = require('os');
+var path = require('path');
+var fork = require('child_process').fork;
 var cmq = require('../');
+var Manager = require('./fixtures/manager');
 
 var dbg;
 if (process.env.NODE_CLUSTERMQ_DEBUG) {
@@ -284,5 +288,85 @@ describe('pub/sub', function() {
       dbg('tst waiting for sub recv');
     });
   });
+});
 
+describe('native driver', function () {
+  before(function (done) {
+    var filename = path.join(os.tmpDir(), 'clustermq-native-test');
+    var manager = Manager.createManager({
+      provider: 'native',
+      filename: filename
+    });
+    var results = this.results = {
+      length: 0
+    };
+
+    fork(require.resolve('./fixtures/harness'), [], {
+      env: {
+        provider: 'native',
+        filename: filename
+      }
+    }).on('exit', function () {
+      manager.loadTestResults().forEach(function (line) {
+        var split = line.split(':');
+
+        assert.equal(split.length, 3, 'Malformed message: ' + line);
+
+        results[split[0]] = results[split[0]] || {};
+        results[split[0]][split[1]] = results[split[0]][split[1]] || [];
+        results[split[0]][split[1]].push(split[2]);
+        results.length++;
+      });
+
+      done();
+    });
+  });
+
+  it('should send all messages', function () {
+    assert.equal(this.results.length, 84, (this.results.length - 84) + ' messages were dropped.');
+  });
+
+  it('should send messages to all processes', function () {
+    assert(this.results.master, 'Master did not receive messages');
+    assert(this.results.worker0, 'Worker0 did not receive messages');
+    assert(this.results.worker1, 'Worker1 did not receive messages');
+  });
+
+  it('should filter by queue name', function () {
+    assert(this.results.master['master.work'], 'Master did not receive "master.work" messages.');
+    assert.equal(this.results.master['master.work'].length, 12, (12 - this.results.master['master.work'].length) + '"master.work" messages were dropped.');
+    assert(this.results.master['all.work'], 'Master did not receive "all.work" messages.');
+    assert.equal(this.results.master['all.work'].length, 4, (4 - this.results.master['all.work'].length) + '"all.work" messages were dropped.');
+
+    assert(this.results.worker0['worker0.work'], 'Worker0 did not receive "worker0.work" messages.');
+    assert.equal(this.results.worker0['worker0.work'].length, 12, (12 - this.results.worker0['worker0.work'].length) + '"worker0.work" messages were dropped.');
+    assert(this.results.worker0['workers.work'], 'Worker0 did not receive "workers.work" messages.');
+    assert.equal(this.results.worker0['workers.work'].length, 6, (6 - this.results.worker0['workers.work'].length) + '"workers.work" messages were dropped.');
+    assert(this.results.worker0['all.work'], 'Worker0 did not receive "all.work" messages.');
+    assert.equal(this.results.worker0['all.work'].length, 4, (4 - this.results.worker0['all.work'].length) + '"all.work" messages were dropped.');
+
+    assert(this.results.worker1['worker1.work'], 'Worker1 did not receive "worker1.work" messages.');
+    assert.equal(this.results.worker1['worker1.work'].length, 12, (12 - this.results.worker1['worker1.work'].length) + '"worker1.work" messages were dropped.');
+    assert(this.results.worker1['workers.work'], 'Worker1 did not receive "workers.work" messages.');
+    assert.equal(this.results.worker1['workers.work'].length, 6, (6 - this.results.worker1['workers.work'].length) + '"workers.work" messages were dropped.');
+    assert(this.results.worker1['all.work'], 'Worker1 did not receive "all.work" messages.');
+    assert.equal(this.results.worker1['all.work'].length, 4, (4 - this.results.worker1['all.work'].length) + '"all.work" messages were dropped.');
+  });
+
+  it('should support PushQueue first or PullQueue first', function () {
+    assert(this.results.master['master.pushfirst'], 'Master did not receive "master.pushfirst" messages.');
+    assert(this.results.master['master.pullfirst'], 'Master did not receive "master.pullfirst" messages.');
+    assert.equal(this.results.master['master.pushfirst'].length, 4, (4 - this.results.master['master.pushfirst'].length) + '"master.pushfirst" messages were dropped.');
+    assert.equal(this.results.master['master.pullfirst'].length, 4, (4 - this.results.master['master.pullfirst'].length) + '"master.pullfirst" messages were dropped.');
+
+    assert(this.results.worker0['worker0.pushfirst'], 'Worker0 did not receive "worker0.pushfirst" messages.');
+    assert(this.results.worker0['worker0.pullfirst'], 'Worker0 did not receive "worker0.pullfirst" messages.');
+    assert.equal(this.results.worker0['worker0.pushfirst'].length, 4, (4 - this.results.worker0['worker0.pushfirst'].length) + '"worker0.pushfirst" messages were dropped.');
+    assert.equal(this.results.worker0['worker0.pullfirst'].length, 4, (4 - this.results.worker0['worker0.pullfirst'].length) + '"worker0.pullfirst" messages were dropped.');
+
+    assert(this.results.worker1['worker1.pushfirst'], 'Worker1 did not receive "worker1.pushfirst" messages.');
+    assert(this.results.worker1['worker1.pullfirst'], 'Worker1 did not receive "worker1.pullfirst" messages.');
+    assert.equal(this.results.worker1['worker1.pushfirst'].length, 4, (4 - this.results.worker1['worker1.pushfirst'].length) + '"worker1.pushfirst" messages were dropped.');
+    assert.equal(this.results.worker1['worker1.pullfirst'].length, 4, (4 - this.results.worker1['worker1.pullfirst'].length) + '"worker1.pullfirst" messages were dropped.');
+  });
 });
