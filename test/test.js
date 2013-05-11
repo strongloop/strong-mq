@@ -320,10 +320,18 @@ describe('native driver', function () {
 
       done();
     });
+
+    this.checkMessageArray = function checkMessageArray(recipient, name, length) {
+      var array = results[recipient.toLowerCase()][name];
+      assert(array, recipient + ' did not receive "' + name + '" messages.');
+
+      var delta = length - array.length;
+      assert.equal(delta, 0, delta + '"' + name + '" messages were dropped heading to ' + recipient + '.');
+    };
   });
 
   it('should send all messages', function () {
-    assert.equal(this.results.length, 84, (this.results.length - 84) + ' messages were dropped.');
+    assert.equal(this.results.length, 240, (this.results.length - 240) + ' messages were dropped.');
   });
 
   it('should send messages to all processes', function () {
@@ -332,41 +340,49 @@ describe('native driver', function () {
     assert(this.results.worker1, 'Worker1 did not receive messages');
   });
 
-  it('should filter by queue name', function () {
-    assert(this.results.master['master.work'], 'Master did not receive "master.work" messages.');
-    assert.equal(this.results.master['master.work'].length, 12, (12 - this.results.master['master.work'].length) + '"master.work" messages were dropped.');
-    assert(this.results.master['all.work'], 'Master did not receive "all.work" messages.');
-    assert.equal(this.results.master['all.work'].length, 4, (4 - this.results.master['all.work'].length) + '"all.work" messages were dropped.');
+  it('should filter work queues by name', function () {
+    this.checkMessageArray('Master', 'master.work', 12);
+    this.checkMessageArray('Master', 'all.work', 4);
 
-    assert(this.results.worker0['worker0.work'], 'Worker0 did not receive "worker0.work" messages.');
-    assert.equal(this.results.worker0['worker0.work'].length, 12, (12 - this.results.worker0['worker0.work'].length) + '"worker0.work" messages were dropped.');
-    assert(this.results.worker0['workers.work'], 'Worker0 did not receive "workers.work" messages.');
-    assert.equal(this.results.worker0['workers.work'].length, 6, (6 - this.results.worker0['workers.work'].length) + '"workers.work" messages were dropped.');
-    assert(this.results.worker0['all.work'], 'Worker0 did not receive "all.work" messages.');
-    assert.equal(this.results.worker0['all.work'].length, 4, (4 - this.results.worker0['all.work'].length) + '"all.work" messages were dropped.');
+    this.checkMessageArray('Worker0', 'worker0.work', 12);
+    this.checkMessageArray('Worker0', 'workers.work', 6);
+    this.checkMessageArray('Worker0', 'all.work', 4);
 
-    assert(this.results.worker1['worker1.work'], 'Worker1 did not receive "worker1.work" messages.');
-    assert.equal(this.results.worker1['worker1.work'].length, 12, (12 - this.results.worker1['worker1.work'].length) + '"worker1.work" messages were dropped.');
-    assert(this.results.worker1['workers.work'], 'Worker1 did not receive "workers.work" messages.');
-    assert.equal(this.results.worker1['workers.work'].length, 6, (6 - this.results.worker1['workers.work'].length) + '"workers.work" messages were dropped.');
-    assert(this.results.worker1['all.work'], 'Worker1 did not receive "all.work" messages.');
-    assert.equal(this.results.worker1['all.work'].length, 4, (4 - this.results.worker1['all.work'].length) + '"all.work" messages were dropped.');
+    this.checkMessageArray('Worker1', 'worker1.work', 12);
+    this.checkMessageArray('Worker1', 'workers.work', 6);
+    this.checkMessageArray('Worker1', 'all.work', 4);
   });
 
   it('should support PushQueue first or PullQueue first', function () {
-    assert(this.results.master['master.pushfirst'], 'Master did not receive "master.pushfirst" messages.');
-    assert(this.results.master['master.pullfirst'], 'Master did not receive "master.pullfirst" messages.');
-    assert.equal(this.results.master['master.pushfirst'].length, 4, (4 - this.results.master['master.pushfirst'].length) + '"master.pushfirst" messages were dropped.');
-    assert.equal(this.results.master['master.pullfirst'].length, 4, (4 - this.results.master['master.pullfirst'].length) + '"master.pullfirst" messages were dropped.');
+    this.checkMessageArray('Master', 'master.pushfirst', 4);
+    this.checkMessageArray('Master', 'master.pullfirst', 4);
 
-    assert(this.results.worker0['worker0.pushfirst'], 'Worker0 did not receive "worker0.pushfirst" messages.');
-    assert(this.results.worker0['worker0.pullfirst'], 'Worker0 did not receive "worker0.pullfirst" messages.');
-    assert.equal(this.results.worker0['worker0.pushfirst'].length, 4, (4 - this.results.worker0['worker0.pushfirst'].length) + '"worker0.pushfirst" messages were dropped.');
-    assert.equal(this.results.worker0['worker0.pullfirst'].length, 4, (4 - this.results.worker0['worker0.pullfirst'].length) + '"worker0.pullfirst" messages were dropped.');
+    this.checkMessageArray('Worker0', 'worker0.pushfirst', 4);
+    this.checkMessageArray('Worker0', 'worker0.pullfirst', 4);
 
-    assert(this.results.worker1['worker1.pushfirst'], 'Worker1 did not receive "worker1.pushfirst" messages.');
-    assert(this.results.worker1['worker1.pullfirst'], 'Worker1 did not receive "worker1.pullfirst" messages.');
-    assert.equal(this.results.worker1['worker1.pushfirst'].length, 4, (4 - this.results.worker1['worker1.pushfirst'].length) + '"worker1.pushfirst" messages were dropped.');
-    assert.equal(this.results.worker1['worker1.pullfirst'].length, 4, (4 - this.results.worker1['worker1.pullfirst'].length) + '"worker1.pullfirst" messages were dropped.');
+    this.checkMessageArray('Worker1', 'worker1.pushfirst', 4);
+    this.checkMessageArray('Worker1', 'worker1.pullfirst', 4);
+  });
+
+  it('should filter topic queues by name', function () {
+    this.checkMessageArray('Master', 'master.topic.test', 12);
+    this.checkMessageArray('Worker0', 'worker0.topic.test', 12);
+    this.checkMessageArray('Worker1', 'worker1.topic.test', 12);
+
+    this.checkMessageArray('Worker0', 'workers.topic.test', 12);
+    this.checkMessageArray('Worker1', 'workers.topic.test', 12);
+
+    this.checkMessageArray('Master', 'all.topic.test', 12);
+    this.checkMessageArray('Worker0', 'all.topic.test', 12);
+    this.checkMessageArray('Worker1', 'all.topic.test', 12);
+  });
+
+  it('should filter subscriptions by topic', function () {
+    this.checkMessageArray('Master', 'all.topic.master', 12);
+    this.checkMessageArray('Worker0', 'all.topic.worker0', 12);
+    this.checkMessageArray('Worker1', 'all.topic.worker1', 12);
+
+    this.checkMessageArray('Worker0', 'workers.topic.worker0', 12);
+    this.checkMessageArray('Worker1', 'workers.topic.worker1', 12);
   });
 });

@@ -90,6 +90,43 @@ function runTestPull(name) {
 }
 
 //
+// ## runTestPublish `runTestPublish(name, topic, [messages])`
+//
+// Creates a PublishQueue named **name**, publishing **messages** (defaults to
+// 4) messages over that queue.
+//
+Manager.prototype.runTestPublish = runTestPublish;
+function runTestPublish(name, topic, messages) {
+  var self = this;
+  var count = typeof messages === 'number' ? messages : 4;
+  var queue = self.connection.createPublishQueue(name);
+
+  for (var i = 0; i < count; i++) {
+    queue.publish(topic, process.env.id + '.' + i);
+  }
+
+  return self;
+}
+
+//
+// ## runTestSubscribe `runTestSubscribe(name, topic)`
+//
+// Creates a SubscribeQueue named **name**, subscribing to **topic** messages
+// sent to it.
+//
+Manager.prototype.runTestSubscribe = runTestSubscribe;
+function runTestSubscribe(name, topic) {
+  var self = this;
+  var queue = self.connection.createSubscribeQueue(name);
+
+  queue.subscribe(topic, function handler(msg) {
+    fs.appendFileSync(self.filename, process.env.id + ':' + name + '.' + topic + ':' + msg + '\n');
+  });
+
+  return self;
+}
+
+//
 // ## loadTestResults `loadTestResults()`
 //
 // Loads all content printed by previous test runs, returning a sorted Array of the results.
