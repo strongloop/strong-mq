@@ -4,6 +4,7 @@ module.exports = CreateAmqp;
 
 var amqp = require('amqp');
 var assert = require('assert');
+var jobs = require('./jobs');
 var events = require('events');
 var util = require('util');
 
@@ -12,37 +13,73 @@ function forwardEvent(name, from, to)
   from.on(name, to.emit.bind(to, name));
 }
 
+var dbg;
+if (process.env.NODE_CLUSTERMQ_DEBUG) {
+  dbg = console.log;
+} else {
+  dbg = function() {};
+}
+
 //-- Connection
 
 function CreateAmqp(provider, url, options) {
-  this.provider = provider;
+  var self = this;
   options = url ? {url: url} : options;
-  amqp.Connection.call(this, options);
+  amqp.Connection.call(self, options, {reconnect: false});
+
+  self.provider = provider;
+
+  // clustermq private extensions to node-amqp connection
+  self._cmq = {
+    whenReady: jobs.delayed(),  // delayed until connection ready
+  };
+
+  self.once('ready', function() {
+    dbg('task-start');
+    self._cmq.whenReady.start();
+  });
 }
 
 util.inherits(CreateAmqp, amqp.Connection);
 
 CreateAmqp.prototype.open = function(callback) {
-  //XXX assert(!this._connection, 'cannot open if already open');
-  assert(callback);
-  var self = this;
-  this.once('ready', callback);
   this.connect();
+  if (callback) {
+    this.on('ready', callback);
+  }
+  return this;
+};
+
+CreateAmqp.prototype._doWhenReady = function(callback) {
+  dbg('task-queue:', callback.name);
+  assert(callback.name);
+  this._cmq.whenReady.push(callback, function() {dbg('task-done:', callback.name);});
   return this;
 };
 
 CreateAmqp.prototype.close = function(callback) {
-  //XXXassert(this._connection, 'cannot close if not open');
+  var self = this;
   if (callback) {
-    this.once('close', function() {
-      callback(); // discard the arguments
+    self.on('close', function() {
+      callback();
     });
   }
-  this.end();
-  return this;
-};
 
-// XXX override .emit(), and filter out connection reset events after close?
+  dbg('connection: queue close, cb?', !!callback);
+
+  self._doWhenReady(function connClose(done) {
+    dbg('connection: call end');
+    //XXX(sam) don't think its clean to FIN a connection, amqp likes to see
+    //an explicit close, sometimes self causes RST (but not always).
+    self.end();
+    self.once('close', function() {
+      dbg('connection: end got close');
+      done();
+    });
+  });
+
+  return self;
+};
 
 //-- Push/Pull Queue
 
@@ -63,60 +100,76 @@ var DESTROY_OPTIONS = {
   //ifEmpty: true,
 };
 
-function queueOpen(self, type, connection, name, callback) {
+function queueOpen(self, type, connection, name) {
   self.name = name;
   self.type = type;
   self._connection = connection;
-  self._q = c(self).queue(name, CREATE_OPTIONS, function() {
-    callback(); // discard arguments from underlying cb
+  c(self)._doWhenReady(function queueOpen(done) {
+    self._q = c(self).queue(name, CREATE_OPTIONS, function() {
+      done();
+    });
+    forwardEvent('error', self._q, self);
   });
-  forwardEvent('error', self._q, self);
 }
 
-function queueClose(callback) {
-  assert(this._q, 'cannot close queue if not open');
+function queueClose() {
+  var self = this;
 
-  if (callback) {
-    this._q.once('close', callback);
-  }
+  c(self)._doWhenReady(function queueClose(done) {
+    self._q.once('close', function() {
+      done();
+    });
+    self._q.close();
+    self._q = null;
+  });
 
-  this._q.close();
-  this._q = null;
-
-  return this;
+  return self;
 }
 
-function PushAmqp(connection, name, callback) {
-  queueOpen(this, 'push', connection, name, callback);
+function PushAmqp(connection, name) {
+  queueOpen(this, 'push', connection, name);
 }
 
 util.inherits(PushAmqp, events.EventEmitter);
 
 PushAmqp.prototype.publish = function(msg) {
-  c(this).publish(this._q.name, msg);
-  return this;
+  var self = this;
+  c(self)._doWhenReady(function pushPublish(done) {
+    c(self).publish(self._q.name, msg);
+    done();
+  });
+  return self;
 };
 
 PushAmqp.prototype.close = queueClose;
 
-CreateAmqp.prototype.pushQueue = function(name, callback) {
-  return new PushAmqp(this, name, callback);
+CreateAmqp.prototype.pushQueue = function(name) {
+  return new PushAmqp(this, name);
 };
 
-function PullAmqp(connection, name, callback) {
-  queueOpen(this, 'pull', connection, name, callback);
+function PullAmqp(connection, name) {
+  queueOpen(this, 'pull', connection, name);
 }
 
 util.inherits(PullAmqp, events.EventEmitter);
 
 PullAmqp.prototype.subscribe = function(callback) {
-  this._q.subscribe(/* ack? prefetchCount? */ function(msg) {
-    if (msg.data && msg.contentType)
-      msg = msg.data; // non-json
-    // else msg is already-parsed json
-    callback(msg);
+  var self = this;
+
+  if (callback) {
+    self.on('message', callback);
+  }
+
+  c(self)._doWhenReady(function pullSubscribe(done) {
+    self._q.subscribe(/* ack? prefetchCount? */ function(msg) {
+      if (msg.data && msg.contentType) {
+        msg = msg.data; // non-json
+      } // else msg is already-parsed json
+      self.emit('message', msg);
+    });
+    done();
   });
-  return this;
+  return self;
 };
 
 PullAmqp.prototype.close = queueClose;
@@ -126,24 +179,32 @@ CreateAmqp.prototype.pullQueue = function(name, callback) {
 };
 
 
-
 //-- Pub/Sub Queue
 
-function PubAmqp(connection, name, callback) {
-  this._connection = connection;
-  this.name = name;
-  this.type = 'pub';
-  this._q = c(this).exchange(name,
-    {autoDelete: true, type: 'topic'}, function() {
-    callback();
+var EXCHANGE_OPTIONS = {autoDelete: true, type: 'topic'};
+
+function PubAmqp(connection, name) {
+  var self = this;
+  self.name = name;
+  self.type = 'pub';
+  self._connection = connection;
+  c(self)._doWhenReady(function pubExchange(done) {
+    self._q = c(self).exchange(name, EXCHANGE_OPTIONS, function () {
+      done();
+    });
+    forwardEvent('error', self._q, self);
   });
 }
 
 util.inherits(PubAmqp, events.EventEmitter);
 
 PubAmqp.prototype.publish = function(msg, topic) {
-  this._q.publish(topic, msg);
-  return this;
+  var self = this;
+  c(self)._doWhenReady(function pubPublish(done) {
+    self._q.publish(topic, msg);
+    done();
+  });
+  return self;
 };
 
 PubAmqp.prototype.close = queueClose;
@@ -152,21 +213,29 @@ CreateAmqp.prototype.pubQueue = function(name, callback) {
   return new PubAmqp(this, name, callback);
 };
 
-function SubAmqp(connection, name, callback) {
+function SubAmqp(connection, name) {
   var self = this;
-  this._connection = connection;
-  this.name = name;
-  this.type = 'sub';
-  this._q = c(this).queue('', {autoDelete: true, exclusive: true}, function(q) {
-    callback();
+  self.name = name;
+  self.type = 'sub';
+  self._connection = connection;
+  c(self)._doWhenReady(function subQueueOpen(done) {
+    self._q = c(self).queue('', {autoDelete: true, exclusive: true}, function(q) {
+      done();
+    });
+    forwardEvent('error', self._q, self);
   });
-  this._q.subscribe(function(msg) {
-    if (msg.data && msg.contentType)
-      msg = msg.data; // non-json
-    // else msg is already-parsed json
-    self.emit('message', msg);
+
+  // We can subscribe here, because nothing will come from self queue until
+  // it's bound to topics (with .subscribe(), below).
+  connection._doWhenReady(function subSubscribe(done) {
+    self._q.subscribe(function(msg) {
+      if (msg.data && msg.contentType) {
+        msg = msg.data; // non-json
+      } // else msg is already-parsed json
+      self.emit('message', msg);
+    });
+    done();
   });
-  //onceOnEvents(this._q, 'queueBindOk', callback);
 }
 
 util.inherits(SubAmqp, events.EventEmitter);
@@ -175,15 +244,26 @@ SubAmqp.prototype.subscribe = function(pattern, callback) {
   assert(pattern.indexOf('*') < 0);
   assert(pattern.indexOf('#') < 0);
 
-  this._q.bind(this.name, pattern + '.#');
+  var self = this;
+
   if (callback) {
-    this.on('message', callback);
+    self.on('message', callback);
   }
-  return this;
+
+  c(self)._doWhenReady(function subBind(done) {
+    dbg('pub: bind', pattern);
+    self._q.bind(self.name, pattern + '.#');
+    self._q.once('queueBindOk', function() {
+      dbg("pub: bind ok");
+      done();
+    });
+  });
+
+  return self;
 };
 
 SubAmqp.prototype.close = queueClose;
 
-CreateAmqp.prototype.subQueue = function(name, callback) {
-  return new SubAmqp(this, name, callback);
+CreateAmqp.prototype.subQueue = function(name) {
+  return new SubAmqp(this, name);
 };

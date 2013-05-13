@@ -143,6 +143,8 @@ Callsback with `msg` when a message is received.
 
 * `msg` {Object} Message pulled off the queue
 
+XXX(sam) make callback an alias for .on('message')?
+
 ### pull.close(callback)
 
 Callsback when queue has been closed. Closing the connection before the queue has been
