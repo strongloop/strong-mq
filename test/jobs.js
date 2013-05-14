@@ -1,4 +1,4 @@
-var delayed = require('../jobs').delayed;
+var delayed = require('../lib/jobs').delayed;
 var assert = require('assert');
 
 describe('job queue', function() {

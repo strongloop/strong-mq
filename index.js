@@ -37,7 +37,7 @@ exports.create = function(options) {
   var url = parsed[1];
   options = parsed[2];
   if (!providers[provider]) {
-    providers[provider] = require('./' + provider);
+    providers[provider] = require('./lib/adapters/' + provider);
   }
   return new providers[provider](provider, url, options);
 };
