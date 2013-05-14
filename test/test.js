@@ -21,7 +21,8 @@ describe('the api', function() {
     assert.equal(mq.provider, 'amqp');
   });
 
-  it('should throw on invalid inputs', function() {
+  // XXX these are now valid input
+  it.skip('should throw on invalid inputs', function() {
     assert.throws(function() {
       cmq.create();
     });
