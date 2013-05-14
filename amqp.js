@@ -45,7 +45,7 @@ util.inherits(CreateAmqp, amqp.Connection);
 CreateAmqp.prototype.open = function(callback) {
   this.connect();
   if (callback) {
-    this.on('ready', callback);
+    this.once('ready', callback);
   }
   return this;
 };
@@ -60,7 +60,7 @@ CreateAmqp.prototype._doWhenReady = function(callback) {
 CreateAmqp.prototype.close = function(callback) {
   var self = this;
   if (callback) {
-    self.on('close', function() {
+    self.once('close', function() {
       callback();
     });
   }

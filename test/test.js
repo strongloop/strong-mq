@@ -35,8 +35,15 @@ describe('amqp connections', function() {
   function openAndClose(options, done) {
     cmq.create(options)
       .open()
-      .close(function() { done(); })
-      .on('error', done);
+      .close(function() {
+        // after error, the socket will be closed, don't call done() twice
+        if (done) {
+          done();
+        }})
+      .once('error', function(er) {
+        done(er);
+        done = null;
+      });
     /*
     var mq = cmq.create(options);
     mq.open(function() {
