@@ -24,7 +24,6 @@ jenkins-install:
 # there are problems with xml format
 jenkins-test:
 	./node_modules/.bin/mocha -R xunit > xunit.xml
-	cat xunit.xml
 
 README.html: README.md
 	marked -o $@ $^
