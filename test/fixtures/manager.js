@@ -119,6 +119,11 @@ function runTestSubscribe(name, topic) {
   var self = this;
   var queue = self.connection.createSubscribeQueue(name);
 
+  // During tests, workers do a lot of process.on('message'), this is expected.
+  if (!cluster.isMaster) {
+    process.setMaxListeners(20);
+  }
+
   queue.subscribe(topic, function handler(msg) {
     fs.appendFileSync(self.filename, process.env.id + ':' + name + '.' + topic + ':' + msg + '\n');
   });
