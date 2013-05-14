@@ -54,15 +54,10 @@ describe('amqp connections', function() {
         done(er);
         done = null;
       });
-    /*
-    var mq = cmq.create(options);
-    mq.open(function() {
-      mq.close(function() { done(); });
-    }).on('error', done);
-    */
   }
 
-  it('should wait until rabbitmq is up on ec-2', function(done) {
+  // XXX looks like this wasn't a problem, skip for now, remove later
+  it.skip('should wait until rabbitmq is up on ec-2', function(done) {
     this.timeout(5000);
     setTimeout(done, 4000);
   });
