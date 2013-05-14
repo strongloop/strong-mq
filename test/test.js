@@ -52,6 +52,11 @@ describe('amqp connections', function() {
     */
   }
 
+  it('should wait until rabbitmq is up on ec-2', function(done) {
+    this.timeout(5000);
+    setTimeout(done, 4000);
+  });
+
   it('should open and close with localhost url', function(done) {
     openAndClose('amqp://localhost', done);
   });
