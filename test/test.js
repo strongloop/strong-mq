@@ -46,7 +46,7 @@ describe('amqp connections', function() {
           done();
         }})
       .once('error', function(er) {
-        if (er.code === ECONNRESET) {
+        if (er.code === 'ECONNRESET') {
           // Some rabbitmq servers don't like to have the connection
           // just opened and closed.
           er = null;
