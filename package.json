@@ -1,6 +1,7 @@
 {
   "name": "clustermq",
   "version": "0.0.0",
+  "private": "true",
   "description": "MQ API with cluster integration, implemented over various message queues",
   "main": "index.js",
   "scripts": {
