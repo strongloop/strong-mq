@@ -99,7 +99,7 @@ Manager.prototype.runTestPublish = runTestPublish;
 function runTestPublish(name, topic, messages) {
   var self = this;
   var count = typeof messages === 'number' ? messages : 4;
-  var queue = self.connection.createPublishQueue(name);
+  var queue = self.connection.createPubQueue(name);
 
   for (var i = 0; i < count; i++) {
     queue.publish(topic, process.env.id + '.' + i);
@@ -117,7 +117,7 @@ function runTestPublish(name, topic, messages) {
 Manager.prototype.runTestSubscribe = runTestSubscribe;
 function runTestSubscribe(name, topic) {
   var self = this;
-  var queue = self.connection.createSubscribeQueue(name);
+  var queue = self.connection.createSubQueue(name);
 
   // During tests, workers do a lot of process.on('message'), this is expected.
   if (!cluster.isMaster) {

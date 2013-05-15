@@ -100,25 +100,25 @@ describe('amqp connections', function() {
 describe('amqp work queues', function() {
   it('should open and close a push queue', function(done) {
     var mq = slmq.create(AMQP).open();
-    assert(mq.pushQueue('june'));
+    assert(mq.createPushQueue('june'));
     mq.close(done);
   });
 
   it('should open and close a push queue, with on', function(done) {
     var mq = slmq.create(AMQP).open();
-    assert(mq.pushQueue('june'));
+    assert(mq.createPushQueue('june'));
     mq.close().on('close', function() { done(); }); // strip argument to close
   });
 
   it('should open and close a pull queue', function(done) {
     var mq = slmq.create(AMQP).open();
-    assert(mq.pullQueue('june'));
+    assert(mq.createPullQueue('june'));
     mq.close(done);
   });
 
   it('should open and close a pull queue, with on', function(done) {
     var mq = slmq.create(AMQP).open();
-    assert(mq.pullQueue('june'));
+    assert(mq.createPullQueue('june'));
     mq.close().on('close', function() { done(); }); // strip argument to close
   });
 
@@ -153,10 +153,10 @@ describe('push and pull into work queues', function() {
   beforeEach(function(done) {
     async.parallel({
       push: function(callback) {
-        connectAndOpen(AMQP, 'pushQueue', 'leonie', callback);
+        connectAndOpen(AMQP, 'createPushQueue', 'leonie', callback);
       },
       pull: function(callback) {
-        connectAndOpen(AMQP, 'pullQueue', 'leonie', callback);
+        connectAndOpen(AMQP, 'createPullQueue', 'leonie', callback);
       }
     }, function(er, results) {
       if (er) return done(er);
@@ -226,10 +226,10 @@ describe('pub/sub', function() {
   it('should open and close', function(done) {
     async.series([
       function(callback) {
-        connectAndOpen(AMQP, 'pubQueue', 'leonie', callback);
+        connectAndOpen(AMQP, 'createPubQueue', 'leonie', callback);
       },
       function(callback) {
-        connectAndOpen(AMQP, 'subQueue', 'leonie', callback);
+        connectAndOpen(AMQP, 'createSubQueue', 'leonie', callback);
       }
     ], function(er, results) {
       if (er) return done(er);
@@ -251,11 +251,11 @@ describe('pub/sub', function() {
     var conn, queue;
 
     conn = slmq.create(AMQP).open();
-    queue = conn.pubQueue('leonie');
+    queue = conn.createPubQueue('leonie');
     var pub = {connection: conn, queue: queue};
 
     conn = slmq.create(AMQP).open();
-    queue = conn.subQueue('leonie');
+    queue = conn.createSubQueue('leonie');
     var sub = {connection: conn, queue: queue};
 
     dbg('tst opened pub and sub');

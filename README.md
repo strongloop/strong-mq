@@ -1,8 +1,8 @@
 # SL MessageQueue: abstract message queue API
 
 [sl-messagequeue](https://github.com/strongloop/sl-messagequeue) is an abstraction layer
-over 3 common message distribution patterns, and (eventually) several different message
-queue implementations.
+over common message distribution patterns, and several different message queue
+implementations, including cluster-native messaging.
 
 
 ## Message Patterns
@@ -12,7 +12,7 @@ queue implementations.
 - topic: published messages are delivered to all subscribers, each message is associated
   with a "topic", and subscribers can specify the topic patterns they want to receive
 - rpc: published messages are delivered to a single subscriber, and a associated response
-  is returned to the original publisher
+  is returned to the original publisher (TBD)
 
 
 ## Installation
@@ -40,13 +40,11 @@ connection.open(function (err) {
 });
 ```
 
-XXX(sam) use cluster in example
-
 
 ## Event: 'error'
 
-Errors may be emitted as events from either a connection or a queue, once they have been
-succesfully opened. The nature of the errors emitted depends on the underlying provider.
+Errors may be emitted as events from either a connection or a queue.  The nature of the
+errors emitted depends on the underlying provider.
 
 
 ## Messages
@@ -63,7 +61,7 @@ be persistent across restarts of the queue broker, depending on the provider.
 
 ## Connections
 
-### slmq.create(options|url)
+### slmq.create([options|url])
 
 Returns a connection object for a specific provider, configuration can
 be created using a options object, or a url:
@@ -71,9 +69,12 @@ be created using a options object, or a url:
 * `options` {Object}
 * `url` {provider://...}
 
+If `create()` is called with no arguments, the native provider will be used.
+
 Supported providers are:
 
 * `'amqp'`: RabbitMQ
+* `'native'`: Cluster-native messaging
 
 Supported options, other than `provider`, depend on the provider:
 
@@ -82,7 +83,7 @@ Supported options, other than `provider`, depend on the provider:
 * `port` {String} Port to connect to (if supported by provider)
 * `...` As supported by the provider
 
-Example of declaring amqp, using an options object:
+Example of creating an amqp connection, using an options object:
 
     connection = clustemq.create({
         provider: 'amqp',
@@ -95,58 +96,53 @@ Example of declaring amqp, using a URL:
     connection = clusermq.create('amqp://guest@localhost');
 
 
-### connection.open([callback])
+### connection.provider {String}
 
-Callsback when connection is ready for use.
+Property is set to the name of the provider.
+
+
+### connection.open()
+
+Opens a connection.
 
 Example:
 
-    connection.open(function ()
-      // ... use connection
-    }).on('error', function () {
+    connection.open().on('error', function () {
       // ... handle error
     });
 
 
-### connection.close(callback)
+### connection.close([callback])
 
 Callsback when connection has been closed.
 
+
 ## Work queues (push/pull)
 
-### connection.pushQueue(callback)
+### connection.createPushQueue()
 
-Returns a queue for pushing work items.
-
-Callsback when queue is ready for use.
+Return a queue for publishing work items.
 
 ### push.publish(msg)
 
-* `msg` {Object} Message to push onto the queue
+Publish a msg to a push queue.
 
-### push.close(callback)
+* `msg` {Object} Message to publish to the queue
 
-Callsback when queue has been closed. Closing the connection before the queue has been
-closed can lead to errors.
+### connection.createPullQueue()
 
-### connection.pullQueue(callback)
+Return a queue for subscribing to work items.
 
-Returns a queue for pulling work items.
+### pull.subscribe([listener])
 
-Callsback when queue is ready for use.
+Listen for messages on a work queue.
 
-### pull.subscribe(callback)
+`listener` is optional, it will be added as a listener
+for the `'message'` event if provided.
 
-Callsback with `msg` when a message is received.
+### queue.close()
 
-* `msg` {Object} Message pulled off the queue
-
-XXX(sam) make callback an alias for .on('message')?
-
-### pull.close(callback)
-
-Callsback when queue has been closed. Closing the connection before the queue has been
-closed can lead to errors.
+Close the queue.
 
 ### queue.name {String}
 
@@ -156,53 +152,83 @@ Name used to create queue.
 
 Either 'push', or 'pull'.
 
+### Event: 'message'
+
+Event is emitted when a subcribed pull queue receives a message.
+
+* `msg` {Object} Message pulled off the queue
+
+
 ## Topic queue (pub/sub)
 
-Topics are dot-separated words. Subscriptions match leading words.
+Topics are dot-separated alphanumeric (or `'_'`) words. Subscription patterns match
+leading words.
 
-### connection.pubQueue(callback)
+### connection.createPubQueue()
 
-Returns a queue for publishing on topics.
-
-Callsback when queue is ready for use.
+Return a queue for publishing on topics.
 
 ### pub.publish(msg, topic)
 
 * `msg` {Object} Message to publish onto the queue
 * `topic` {String} Topic of message, default is `''`
 
-### pub.close(callback)
 
-Callsback when queue has been closed. Closing the connection before the queue has been
-closed can lead to errors.
+### connection.createSubQueue()
 
-### connection.subQueue(callback)
+Return a queue for subscribing to topics.
 
-Returns a queue for subscribing to topics.
+### sub.subscribe(pattern[, listener])
 
-Callsback with null on success, or an `Error` object on failure.
+Listen for messages matching pattern on a topic queue.
 
-### sub.subscribe(topic[, callback])
+* `pattern` {String} Pattern of message, may contain wildcards, default is `''`
 
-* `topic` {String} Topic of message, may contain wildcards, default is `''`
+`listener` is optional, it will be added as a listener for the `'message'` event if
+provided. Add your listener to the `'message'` event directly when subscribing multiple
+times, or all your listeners will be called for all messages.
 
-Callback will be registered with the `'message'` event.
+Example of subscribing to multiple patterns:
 
     sub.subscribe('that.*')
       .subscribe('this.*')
-      .on('message', function callback(msg) { ... });
+      .on('message', function (msg) { ... });
 
-### sub.close(callback)
+Example of subscribing to a single pattern, and providing a listener:
 
-Callsback when queue has been closed. Closing the connection before the queue has been
-closed can lead to errors.
+    sub.subscribe('other.*', function (msg) { ... });
+
+### queue.close()
+
+Close the queue.
+
+### queue.name {String}
+
+Name used to create queue.
+
+### queue.type {String}
+
+Either 'pub', or 'sub'.
 
 ### Event: 'message'
 
-* `msg` {Object} Message received off the queue
+Event is emitted when a subcribed pull queue receives a message.
 
-Event receives a `msg` object.
+* `msg` {Object} Message pulled off the queue
 
+
+## Provider: NATIVE
+
+The NativeConnection uses the built-in
+[cluster](http://nodejs.org/docs/latest/api/cluster.html) module to facilitate the
+ClusterMQ API.  It's designed to be the first adapter people use in early development,
+before they get whatever system they will use for deployment up and running.
+
+It has no options.
+
+The URL format is:
+
+    native:[//]
 
 ## Provider: AMQP
 
@@ -225,20 +251,9 @@ The URL format for specifying the options above is:
 
 Note that the `host` is mandatory when using a URL.
 
-Note that node-amqp supports RabbitMQ 3.0.4, or higher.
-
-
-## Testing
-
-Requires rabbitmq server running on localhost:
-
-    % rabbitmq-server
-
-Works with 3.0.4, from homebrew.
-
-Not working with 1.8.1, from debian 6.
-
-Upgraded to 3.0.4 on debian using [rabbitmq repo](http://www.rabbitmq.com/install-debian.html)
+Note that node-amqp supports RabbitMQ 3.0.4, or higher. In particular, it will *not* work
+with RabbitMQ 1.8.1 that is packaged with Debian 6, see the
+[upgrade instructions](http://www.rabbitmq.com/install-debian.html).
 
 
 ## Future work
@@ -254,5 +269,3 @@ common mechanisms exist among the various queue providers.
   provide back pressure on the queue when under load.
 - Persistence, whether queues persist beyond the existence of any
   users or undelivered messages.
-
-
