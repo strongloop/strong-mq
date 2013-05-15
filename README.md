@@ -1,6 +1,6 @@
-# clustermq - abstract message queue API
+# SL MessageQueue: abstract message queue API
 
-[slnode-clustermq](https://github.com/strongloop/slnode-clustermq) is an abstraction layer
+[sl-messagequeue](https://github.com/strongloop/sl-messagequeue) is an abstraction layer
 over 3 common message distribution patterns, and (eventually) several different message
 queue implementations.
 
@@ -18,9 +18,7 @@ queue implementations.
 ## Installation
 
     % npm test
-    % npm install clustermq
-
-XXX(sroberts) Requires clustermq to be published to a (private?) npm repository
+    % npm install sl-messagequeue
 
 
 ## Synopsis
@@ -28,7 +26,7 @@ XXX(sroberts) Requires clustermq to be published to a (private?) npm repository
 An example of connecting to a server and listening on a work queue:
 
 ```javascript
-var connection = require('clustermq')
+var connection = require('sl-messagequeue')
     .create('amqp://localhost');
 
 connection.open(function (err) {
@@ -65,7 +63,7 @@ be persistent across restarts of the queue broker, depending on the provider.
 
 ## Connections
 
-### clustermq.create(options|url)
+### slmq.create(options|url)
 
 Returns a connection object for a specific provider, configuration can
 be created using a options object, or a url:

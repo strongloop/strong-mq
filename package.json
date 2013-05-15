@@ -1,15 +1,15 @@
 {
-  "name": "clustermq",
+  "name": "sl-messagequeue",
   "version": "0.0.0",
   "private": "true",
-  "description": "MQ API with cluster integration, implemented over various message queues",
+  "description": "Message Queue API with cluster integration, implemented over various message queues",
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/strongloop/slnode-clustermq.git"
+    "url": "git://github.com/strongloop/sl-messagequeue.git"
   },
   "author": {
     "name": "Sam Roberts"

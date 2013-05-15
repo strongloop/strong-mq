@@ -3,7 +3,7 @@ var async = require('async');
 var os = require('os');
 var path = require('path');
 var fork = require('child_process').fork;
-var cmq = require('../');
+var slmq = require('../');
 var Manager = require('./fixtures/manager');
 
 var dbg;
@@ -17,20 +17,20 @@ var AMQP = {provider: 'amqp'};
 
 describe('the api', function() {
   it('should create amqp connector', function() {
-    var mq = cmq.create(AMQP);
+    var mq = slmq.create(AMQP);
     assert.equal(mq.provider, 'amqp');
   });
 
   // XXX these are now valid input
   it.skip('should throw on invalid inputs', function() {
     assert.throws(function() {
-      cmq.create();
+      slmq.create();
     });
     assert.throws(function() {
-      cmq.create({});
+      slmq.create({});
     });
     assert.throws(function() {
-      cmq.create({provider: 'no such provider'});
+      slmq.create({provider: 'no such provider'});
     });
   });
 });
@@ -38,7 +38,7 @@ describe('the api', function() {
 
 describe('amqp connections', function() {
   function openAndClose(options, done) {
-    cmq.create(options)
+    slmq.create(options)
       .open()
       .close(function() {
         // after error, the socket will be closed, don't call done() twice
@@ -71,7 +71,7 @@ describe('amqp connections', function() {
   });
 
   it('should error on a connect failure', function(done) {
-    var mq = cmq.create({provider: 'amqp', port: 1});
+    var mq = slmq.create({provider: 'amqp', port: 1});
     mq.NAME = 'FIRST';
     mq.open(function() {
       assert(false); // unreachable on failure
@@ -99,25 +99,25 @@ describe('amqp connections', function() {
 
 describe('amqp work queues', function() {
   it('should open and close a push queue', function(done) {
-    var mq = cmq.create(AMQP).open();
+    var mq = slmq.create(AMQP).open();
     assert(mq.pushQueue('june'));
     mq.close(done);
   });
 
   it('should open and close a push queue, with on', function(done) {
-    var mq = cmq.create(AMQP).open();
+    var mq = slmq.create(AMQP).open();
     assert(mq.pushQueue('june'));
     mq.close().on('close', function() { done(); }); // strip argument to close
   });
 
   it('should open and close a pull queue', function(done) {
-    var mq = cmq.create(AMQP).open();
+    var mq = slmq.create(AMQP).open();
     assert(mq.pullQueue('june'));
     mq.close(done);
   });
 
   it('should open and close a pull queue, with on', function(done) {
-    var mq = cmq.create(AMQP).open();
+    var mq = slmq.create(AMQP).open();
     assert(mq.pullQueue('june'));
     mq.close().on('close', function() { done(); }); // strip argument to close
   });
@@ -134,7 +134,7 @@ describe('amqp work queues', function() {
 
 // Less necessary now that operations are serialized.
 var connectAndOpen = function(options, qtype, qname, callback) {
-  var mq = cmq.create(options).open();
+  var mq = slmq.create(options).open();
   var queue = mq[qtype].call(mq, qname);
   callback(null, {connection: mq, queue: queue});
 };
@@ -188,7 +188,7 @@ describe('push and pull into work queues', function() {
     mq.push.queue.publish('bonjour!');
     mq.pull.queue.subscribe(function(msg) {
       dbg('tst receive', msg.toString());
-      dbg('tst unprocessed?', mq.push.connection._cmq.whenReady.tasks);
+      dbg('tst unprocessed?', mq.push.connection._slmq.whenReady.tasks);
       assert(msg == 'bonjour!');
       done();
     });
@@ -250,11 +250,11 @@ describe('pub/sub', function() {
     dbg('tst start pub and sub');
     var conn, queue;
 
-    conn = cmq.create(AMQP).open();
+    conn = slmq.create(AMQP).open();
     queue = conn.pubQueue('leonie');
     var pub = {connection: conn, queue: queue};
 
-    conn = cmq.create(AMQP).open();
+    conn = slmq.create(AMQP).open();
     queue = conn.subQueue('leonie');
     var sub = {connection: conn, queue: queue};
 
@@ -288,7 +288,7 @@ describe('pub/sub', function() {
 
 describe('native driver', function() {
   before(function(done) {
-    var filename = path.join(os.tmpDir(), 'clustermq-native-test');
+    var filename = path.join(os.tmpDir(), 'slmq-native-test');
     var manager = Manager.createManager({
       provider: 'native',
       filename: filename

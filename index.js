@@ -1,4 +1,4 @@
-// clustermq
+// sl-messagequeue
 
 var copy = require('underscore').clone;
 var parse = require('url').parse;
