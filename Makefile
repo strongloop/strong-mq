@@ -10,10 +10,10 @@ test:
 	@npm test
 
 lint:
-	@jshint *.js test
+	@jshint *.js test lib
 
 glint:
-	@gjslint --nojsdoc *.js test/*.js
+	@gjslint --nojsdoc *.js test/*.js lib
 
 jenkins-build: jenkins-install jenkins-test
 

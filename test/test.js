@@ -107,7 +107,7 @@ describe('amqp work queues', function() {
   it('should open and close a push queue, with on', function(done) {
     var mq = cmq.create(AMQP).open();
     assert(mq.pushQueue('june'));
-    mq.close().on('close', function() { done(); }); // strip net's argument to close
+    mq.close().on('close', function() { done(); }); // strip argument to close
   });
 
   it('should open and close a pull queue', function(done) {
@@ -119,7 +119,7 @@ describe('amqp work queues', function() {
   it('should open and close a pull queue, with on', function(done) {
     var mq = cmq.create(AMQP).open();
     assert(mq.pullQueue('june'));
-    mq.close().on('close', function() { done(); }); // strip net's argument to close
+    mq.close().on('close', function() { done(); }); // strip argument to close
   });
 
   // XXX(sam) Difficult, see comments above.
@@ -286,8 +286,8 @@ describe('pub/sub', function() {
   });
 });
 
-describe('native driver', function () {
-  before(function (done) {
+describe('native driver', function() {
+  before(function(done) {
     var filename = path.join(os.tmpDir(), 'clustermq-native-test');
     var manager = Manager.createManager({
       provider: 'native',
@@ -302,8 +302,8 @@ describe('native driver', function () {
         provider: 'native',
         filename: filename
       }
-    }).on('exit', function () {
-      manager.loadTestResults().forEach(function (line) {
+    }).on('exit', function() {
+      manager.loadTestResults().forEach(function(line) {
         var split = line.split(':');
 
         assert.equal(split.length, 3, 'Malformed message: ' + line);
@@ -317,26 +317,29 @@ describe('native driver', function () {
       done();
     });
 
-    this.checkMessageArray = function checkMessageArray(recipient, name, length) {
+    this.checkMessageArray = function(recipient, name, length) {
       var array = results[recipient.toLowerCase()][name];
       assert(array, recipient + ' did not receive "' + name + '" messages.');
 
       var delta = length - array.length;
-      assert.equal(delta, 0, delta + '"' + name + '" messages were dropped heading to ' + recipient + '.');
+      assert.equal(delta, 0,
+        delta + '"' + name +
+        '" messages were dropped heading to ' + recipient + '.');
     };
   });
 
-  it('should send all messages', function () {
-    assert.equal(this.results.length, 240, (this.results.length - 240) + ' messages were dropped.');
+  it('should send all messages', function() {
+    assert.equal(this.results.length, 240,
+      (this.results.length - 240) + ' messages were dropped.');
   });
 
-  it('should send messages to all processes', function () {
+  it('should send messages to all processes', function() {
     assert(this.results.master, 'Master did not receive messages');
     assert(this.results.worker0, 'Worker0 did not receive messages');
     assert(this.results.worker1, 'Worker1 did not receive messages');
   });
 
-  it('should filter work queues by name', function () {
+  it('should filter work queues by name', function() {
     this.checkMessageArray('Master', 'master.work', 12);
     this.checkMessageArray('Master', 'all.work', 4);
 
@@ -349,7 +352,7 @@ describe('native driver', function () {
     this.checkMessageArray('Worker1', 'all.work', 4);
   });
 
-  it('should support PushQueue first or PullQueue first', function () {
+  it('should support PushQueue first or PullQueue first', function() {
     this.checkMessageArray('Master', 'master.pushfirst', 4);
     this.checkMessageArray('Master', 'master.pullfirst', 4);
 
@@ -360,7 +363,7 @@ describe('native driver', function () {
     this.checkMessageArray('Worker1', 'worker1.pullfirst', 4);
   });
 
-  it('should filter topic queues by name', function () {
+  it('should filter topic queues by name', function() {
     this.checkMessageArray('Master', 'master.topic.test', 12);
     this.checkMessageArray('Worker0', 'worker0.topic.test', 12);
     this.checkMessageArray('Worker1', 'worker1.topic.test', 12);
@@ -373,7 +376,7 @@ describe('native driver', function () {
     this.checkMessageArray('Worker1', 'all.topic.test', 12);
   });
 
-  it('should filter subscriptions by topic', function () {
+  it('should filter subscriptions by topic', function() {
     this.checkMessageArray('Master', 'all.topic.master', 12);
     this.checkMessageArray('Worker0', 'all.topic.worker0', 12);
     this.checkMessageArray('Worker1', 'all.topic.worker1', 12);

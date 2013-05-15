@@ -1,1 +1,1 @@
-module.exports = require('./lib/adapters/native')
+module.exports = require('./lib/adapters/native');
