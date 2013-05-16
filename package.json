@@ -5,7 +5,8 @@
   "description": "Message Queue API with cluster integration, implemented over various message queues",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --reporter spec"
+    "test": "mocha --reporter spec",
+    "lint": "./node_modules/.bin/jshint *.js test lib"
   },
   "repository": {
     "type": "git",

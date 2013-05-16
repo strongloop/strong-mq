@@ -1,6 +1,5 @@
 {
-  "es5": true
-  , "camelcase": true
+  "camelcase": true
   , "quotmark": "single"
   , "eqnull": true
 }

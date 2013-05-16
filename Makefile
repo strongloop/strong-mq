@@ -10,7 +10,7 @@ test:
 	@npm test
 
 lint:
-	@jshint *.js test lib
+	@npm run lint
 
 glint:
 	@gjslint --nojsdoc *.js test/*.js lib
