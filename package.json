@@ -12,17 +12,17 @@
     "url": "git://github.com/strongloop/sl-messagequeue.git"
   },
   "author": {
-    "name": "Sam Roberts"
-    , "email": "sam@strongloop.com"
+    "name": "Sam Roberts",
+    "email": "sam@strongloop.com"
   },
   "dependencies": {
-    "amqp": "latest"
-    , "underscore": "latest"
+    "amqp": "~0.1.6",
+    "underscore": "~1.4.4",
+    "async": "~0.2.8"
   },
   "devDependencies": {
-    "mocha": "latest"
-    , "async": "latest"
-    , "jshint": "latest"
+    "mocha": "~1.9.0",
+    "jshint": "~2.0.1"
   },
   "engines": {
     "node": "*"
