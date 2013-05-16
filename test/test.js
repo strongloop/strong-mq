@@ -15,61 +15,89 @@ if (process.env.NODE_CLUSTERMQ_DEBUG) {
 
 var AMQP = {provider: 'amqp'};
 
-describe('the api', function() {
-  it('should create amqp connector', function() {
-    var mq = slmq.create(AMQP);
-    assert.equal(mq.provider, 'amqp');
+describe('create', function() {
+  it('should create native with no options', function() {
+    var mq = slmq.create();
+    assert.equal(mq.provider, 'native');
   });
 
-  // XXX these are now valid input
-  it.skip('should throw on invalid inputs', function() {
-    assert.throws(function() {
-      slmq.create();
-    });
+  it('should throw if options has no provider', function() {
     assert.throws(function() {
       slmq.create({});
     });
+  });
+
+  it('shold throw if options has unknown provider', function() {
     assert.throws(function() {
       slmq.create({provider: 'no such provider'});
     });
   });
+
+  it('shold throw if url has unknown provider', function() {
+    assert.throws(function() {
+      slmq.create('nosuchprovidereverreallyatall://localhost');
+    });
+  });
+
 });
 
 
-describe('amqp connections', function() {
-  function openAndClose(options, done) {
-    slmq.create(options)
-      .open()
-      .close(function() {
-        // after error, the socket will be closed, don't call done() twice
-        if (done) {
-          done();
-        }})
-      .once('error', function(er) {
-        if (er.code === 'ECONNRESET') {
-          // Some rabbitmq servers don't like to have the connection
-          // just opened and closed.
-          er = null;
-        }
-        done(er);
-        done = null;
-      });
-  }
+function describeCreate(provider) {
+  describe('create with ' + provider, function() {
+    it('should create with options', function() {
+      var mq = slmq.create({provider: provider});
+      assert.equal(mq.provider, provider);
+    });
 
-  // XXX looks like this wasn't a problem, skip for now, remove later
-  it.skip('should wait until rabbitmq is up on ec-2', function(done) {
-    this.timeout(5000);
-    setTimeout(done, 4000);
+    it('should create with url', function() {
+      var mq = slmq.create(provider + ':');
+      assert.equal(mq.provider, provider);
+    });
+
   });
+}
 
-  it('should open and close with localhost url', function(done) {
-    openAndClose('amqp://localhost', done);
+describeCreate('amqp');
+describeCreate('native');
+
+
+function openAndClose(options, done) {
+  slmq.create(options)
+  .open()
+  .close(function() {
+    // don't call done twice
+    if (done) {
+      done();
+    }})
+  .once('error', function(er) {
+    if (er.code === 'ECONNRESET') {
+      // Some rabbitmq servers don't like to have the connection
+      // just opened and closed. This code path shouldn't effect
+      // providers that don't have floppy ears.
+      er = null;
+    }
+    done(er);
+    done = null;
   });
+}
 
-  it('should open and close with default options', function(done) {
-    openAndClose(AMQP, done);
+function describeOpen(provider) {
+  describe('open with ' + provider, function() {
+    it('should open with options', function(done) {
+      openAndClose({provider: provider}, done);
+    });
+
+    it('should open with url', function(done) {
+      openAndClose(provider + ':', done);
+    });
+
   });
+}
 
+describeOpen('amqp');
+describeOpen('native');
+
+describe('open with amqp', function() {
   it('should error on a connect failure', function(done) {
     var mq = slmq.create({provider: 'amqp', port: 1});
     mq.NAME = 'FIRST';
@@ -81,56 +109,49 @@ describe('amqp connections', function() {
       done();
     });
   });
+});
 
-  // XXX(sam) next are difficult, we are victim of underlying lib, I wanted
-  // them because its nice to detect usage errors immediately, rather than just
-  // damaging the connection which shows up later.
-  it.skip('should throw or ignore multiple open', function(done) {
-  });
+// XXX(sam) next are difficult, we are victim of underlying lib, I wanted
+// them because its nice to detect usage errors immediately, rather than just
+// damaging the connection which shows up later.
+// XXX(sam) if these were being implemented, I would wrap and paramaterize for
+// each provider
+describe.skip('open and close misuse', function() {
+  it('should throw or ignore multiple open', function(done) { });
 
-  it.skip('should throw or ignore close when never opened', function() {
-  });
+  it('should throw or ignore close when never opened', function() { });
 
-  it.skip('should throw on close after closed', function(done) {
-  });
+  it('should throw on close after closed', function(done) { });
 
 });
 
 
-describe('amqp work queues', function() {
-  it('should open and close a push queue', function(done) {
-    var mq = slmq.create(AMQP).open();
-    assert(mq.createPushQueue('june'));
-    mq.close(done);
-  });
+function describePushQueueOpenAndClose(provider) {
 
-  it('should open and close a push queue, with on', function(done) {
-    var mq = slmq.create(AMQP).open();
-    assert(mq.createPushQueue('june'));
-    mq.close().on('close', function() { done(); }); // strip argument to close
-  });
+  function withOptions(tag, options) {
+    describe('work queues with ' + provider + ' and ' + tag, function() {
+      it('should open and close a push queue', function(done) {
+        var mq = slmq.create(options).open();
+        assert(mq.createPushQueue('june'));
+        mq.close(done);
+      });
 
-  it('should open and close a pull queue', function(done) {
-    var mq = slmq.create(AMQP).open();
-    assert(mq.createPullQueue('june'));
-    mq.close(done);
-  });
+      it('should open and close a pull queue', function(done) {
+        var mq = slmq.create(options).open();
+        assert(mq.createPullQueue('june'));
+        mq.close(done);
+      });
 
-  it('should open and close a pull queue, with on', function(done) {
-    var mq = slmq.create(AMQP).open();
-    assert(mq.createPullQueue('june'));
-    mq.close().on('close', function() { done(); }); // strip argument to close
-  });
+    });
+  }
 
-  // XXX(sam) Difficult, see comments above.
-  it.skip('should throw on close after close', function(done) {
-  });
+  withOptions('options', {provider: provider});
+  withOptions('url', provider + ':');
+}
 
-  // XXX(sam) how to cause underlying errors?
-  it.skip('should forward underlying errors', function(done) {
-  });
+describePushQueueOpenAndClose('amqp');
+describePushQueueOpenAndClose('native');
 
-});
 
 // Less necessary now that operations are serialized.
 var connectAndOpen = function(options, qtype, qname, callback) {
