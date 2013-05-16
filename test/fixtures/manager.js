@@ -102,7 +102,7 @@ function runTestPublish(name, topic, messages) {
   var queue = self.connection.createPubQueue(name);
 
   for (var i = 0; i < count; i++) {
-    queue.publish(topic, process.env.id + '.' + i);
+    queue.publish(process.env.id + '.' + i, topic);
   }
 
   return self;
