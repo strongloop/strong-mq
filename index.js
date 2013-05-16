@@ -1,9 +1,8 @@
-// sl-messagequeue
+// sl-messagequeue: attempt to lazy-load providers on reference
 
+var assert = require('assert');
 var copy = require('underscore').clone;
 var parse = require('url').parse;
-
-// Attempt to lazy-load providers on reference
 
 function urlProvider(url) {
   var protocol = parse(url).protocol;
@@ -24,10 +23,10 @@ function extractProvider(options) {
     delete options.provider;
   }
 
+  assert(provider, 'options must specify the provider');
+
   return [provider, url, options];
 }
-
-var providers = {};
 
 exports.create = function(options) {
   var parsed = extractProvider(options || {
@@ -36,9 +35,6 @@ exports.create = function(options) {
   var provider = parsed[0];
   var url = parsed[1];
   options = parsed[2];
-  if (!providers[provider]) {
-    providers[provider] = require('./lib/adapters/' + provider);
-  }
-  return new providers[provider](provider, url, options);
+  var Connection = require('./lib/adapters/' + provider);
+  return new Connection(provider, url, options);
 };
-
