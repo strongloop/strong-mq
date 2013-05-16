@@ -1,6 +1,7 @@
 // generic api tests, should run against all providers
 
 var assert = require('assert');
+var dbg = require('../lib/dbg');
 var slmq = require('../');
 
 

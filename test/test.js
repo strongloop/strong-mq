@@ -1,17 +1,12 @@
 var assert = require('assert');
 var async = require('async');
+var dbg = require('../lib/dbg');
 var os = require('os');
 var path = require('path');
 var fork = require('child_process').fork;
 var slmq = require('../');
 var Manager = require('./fixtures/manager');
 
-var dbg;
-if (process.env.NODE_CLUSTERMQ_DEBUG) {
-  dbg = console.log;
-} else {
-  dbg = function() {};
-}
 
 var AMQP = {provider: 'amqp'};
 
