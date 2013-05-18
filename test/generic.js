@@ -120,7 +120,7 @@ function describePushQueueOpenAndClose(provider) {
         mq.close(done);
       });
 
-      it('should send strings', function(done) {
+      it('should deliver with push, close, then pull', function(done) {
         this.timeout(0);
         dbg('publish start');
         var cpush = slmq.create(options).open();
@@ -130,7 +130,7 @@ function describePushQueueOpenAndClose(provider) {
 
         qpush.publish(obj);
 
-        subscribe();
+        cpush.close(subscribe);
 
         function subscribe() {
           dbg('subscribe start');
@@ -156,5 +156,4 @@ function describePushQueueOpenAndClose(provider) {
 }
 
 describePushQueueOpenAndClose('amqp');
-//XXX(sam) causes abrupt node exit....
-// describePushQueueOpenAndClose('native');
+describePushQueueOpenAndClose('native');
