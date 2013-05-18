@@ -108,6 +108,7 @@ function describePushQueueOpenAndClose(provider) {
 
   function withOptions(tag, options) {
     describe('work queues with ' + provider + ' and ' + tag, function() {
+
       it('should open and close a push queue', function(done) {
         var mq = slmq.create(options).open();
         assert(mq.createPushQueue('june'));
@@ -120,24 +121,62 @@ function describePushQueueOpenAndClose(provider) {
         mq.close(done);
       });
 
-      it('should deliver with push, close, then pull', function(done) {
-        var cpush = slmq.create(options).open();
-        var qpush = cpush.createPushQueue('june');
-        var cpull, qpull;
-        var obj = 'bonjour!';
+    });
 
-        qpush.publish(obj);
+    describe('work queue push then pull with ' + provider + ' and ' + tag, function() {
 
+      var cpush, qpush, cpull, qpull;
+
+      beforeEach(function() {
+        cpush = slmq.create(options).open();
+        qpush = cpush.createPushQueue('june');
         cpull = slmq.create(options).open();
         qpull = cpull.createPullQueue('june');
-        qpull.subscribe(check);
+      });
 
+      afterEach(function(done) {
+        cpull.close(function() {
+          cpush.close(done);
+        });
+      });
+
+      it('should deliver strings', function(done) {
+        var obj = 'bonjour!';
+        qpush.publish(obj);
+        qpull.subscribe(check);
         function check(msg) {
-          dbg('check start');
           assert.equal(msg, obj);
-          cpull.close(function() {
-            cpush.close(done);
-          });
+          done();
+        }
+      });
+
+      it('should deliver buffers', function(done) {
+        var obj = Buffer('bonjour!');
+        qpush.publish(obj);
+        qpull.subscribe(check);
+        function check(msg) {
+          assert.equal(String(msg), obj);
+          done();
+        }
+      });
+
+      it('should deliver objects', function(done) {
+        var obj = {salutation: 'bonjour!'};
+        qpush.publish(obj);
+        qpull.subscribe(check);
+        function check(msg) {
+          assert.deepEqual(msg, obj);
+          done();
+        }
+      });
+
+      it('should deliver arrays', function(done) {
+        var obj = {salutation: 'bonjour!'};
+        qpush.publish(obj);
+        qpull.subscribe(check);
+        function check(msg) {
+          assert.deepEqual(msg, obj);
+          done();
         }
       });
 

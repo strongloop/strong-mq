@@ -40,6 +40,8 @@ var closeAndDisconnect = function(queue, connection, callback) {
 describe('push and pull into work queues', function() {
   var mq;
 
+  // XXX(sam) tests now duplicate with ones in test/generic.js, remove soon
+
   beforeEach(function(done) {
     async.parallel({
       push: function(callback) {
@@ -100,11 +102,9 @@ describe('push and pull into work queues', function() {
     });
   });
 
-  it('should receive sent buffers, as strings', function(done) {
+  it('should receive sent buffers', function(done) {
     mq.push.queue.publish(new Buffer('bonjour!'));
     mq.pull.queue.subscribe(function(msg) {
-      // XXX actually, sent buffers AND strings are received as buffers, which
-      // test as equal to strings
       assert.equal(msg, 'bonjour!');
       done();
     });
