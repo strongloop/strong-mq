@@ -121,8 +121,6 @@ function describePushQueueOpenAndClose(provider) {
       });
 
       it('should deliver with push, close, then pull', function(done) {
-        this.timeout(0);
-        dbg('publish start');
         var cpush = slmq.create(options).open();
         var qpush = cpush.createPushQueue('june');
         var cpull, qpull;
@@ -130,14 +128,9 @@ function describePushQueueOpenAndClose(provider) {
 
         qpush.publish(obj);
 
-        cpush.close(subscribe);
-
-        function subscribe() {
-          dbg('subscribe start');
-          cpull = slmq.create(options).open();
-          qpull = cpull.createPullQueue('june');
-          qpull.subscribe(check);
-        }
+        cpull = slmq.create(options).open();
+        qpull = cpull.createPullQueue('june');
+        qpull.subscribe(check);
 
         function check(msg) {
           dbg('check start');
