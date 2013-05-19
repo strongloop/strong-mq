@@ -5,7 +5,7 @@
 //
 var cluster = require('cluster');
 var fs = require('fs');
-var clusterMQ = require('../../');
+var slmq = require('../../');
 
 //
 // ## Manager `Manager(obj)`
@@ -19,7 +19,7 @@ function Manager(obj) {
 
   obj = obj || { provider: 'native' };
 
-  this.connection = clusterMQ.create(obj);
+  this.connection = slmq.create(obj);
   this.connection.open();
 
   this.filename = obj.filename || './out.txt';

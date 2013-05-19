@@ -1,8 +1,8 @@
 {
-  "name": "sl-messagequeue",
-  "version": "0.0.0",
+  "name": "sl-mq",
+  "version": "0.0.1",
   "private": "true",
-  "description": "Message Queue API with cluster integration, implemented over various message queues",
+  "description": "clustering of applications on top of message queues",
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/strongloop/sl-messagequeue.git"
+    "url": "git://github.com/strongloop/sl-mq.git"
   },
   "author": {
     "name": "Sam Roberts",

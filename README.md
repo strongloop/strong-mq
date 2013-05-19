@@ -1,8 +1,14 @@
-# SL MessageQueue: abstract message queue API
+# SL-MQ - clustering of applications on top of message queues
 
-[sl-messagequeue](https://github.com/strongloop/sl-messagequeue) is an abstraction layer
+[sl-mq](https://github.com/strongloop/sl-mq) is an abstraction layer
 over common message distribution patterns, and several different message queue
 implementations, including cluster-native messaging.
+
+It allows applications to be written against a single message queue style API, and then
+deployed either singly, or as a cluster, with deploy-time configuration of the messaging
+provider.  Providers include native node clustering, allowing no-dependency deployment
+during test and development. Support for other providers is on-going, and 3rd parties will
+be able to add pluggable support for new message queue platforms.
 
 
 ## Message Patterns
@@ -18,7 +24,7 @@ implementations, including cluster-native messaging.
 ## Installation
 
     % npm test
-    % npm install sl-messagequeue
+    % npm install sl-mq
 
 
 ## Synopsis
@@ -26,7 +32,7 @@ implementations, including cluster-native messaging.
 An example of connecting to a server and listening on a work queue:
 
 ```javascript
-var connection = require('sl-messagequeue')
+var connection = require('sl-mq')
     .create('amqp://localhost');
 
 connection.open(function (err) {
@@ -221,7 +227,7 @@ Event is emitted when a subcribed pull queue receives a message.
 
 The NativeConnection uses the built-in
 [cluster](http://nodejs.org/docs/latest/api/cluster.html) module to facilitate the
-ClusterMQ API.  It's designed to be the first adapter people use in early development,
+SL-MQ API.  It's designed to be the first adapter people use in early development,
 before they get whatever system they will use for deployment up and running.
 
 It has no options.
