@@ -1,7 +1,6 @@
 {
   "name": "sl-mq",
   "version": "0.0.1",
-  "private": "true",
   "description": "clustering of applications on top of message queues",
   "main": "index.js",
   "scripts": {
@@ -10,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/strongloop/sl-mq.git"
+    "url": "https://github.com/strongloop/sl-mq.git"
   },
   "author": {
     "name": "Sam Roberts",
