@@ -2,6 +2,7 @@
   "name": "sl-mq",
   "version": "0.0.1",
   "description": "clustering of applications on top of message queues",
+  "license": "BSD",
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec",
