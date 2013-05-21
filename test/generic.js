@@ -107,7 +107,9 @@ describe.skip('open and close misuse', function() {
 function describePushQueueOpenAndClose(provider) {
 
   function withOptions(tag, options) {
-    describe('work queues with ' + provider + ' and ' + tag, function() {
+    var suffix = ' with '  + provider + ' and ' + tag;
+
+    describe('work queues' + suffix, function() {
 
       it('should open and close a push queue', function(done) {
         var mq = slmq.create(options).open();
@@ -129,7 +131,7 @@ function describePushQueueOpenAndClose(provider) {
 
     });
 
-    describe('work queue push then pull with ' + provider + ' and ' + tag, function() {
+    describe('work queue push then pull' + suffix, function() {
 
       var cpush, qpush, cpull, qpull;
 
@@ -183,6 +185,48 @@ function describePushQueueOpenAndClose(provider) {
         function check(msg) {
           assert.deepEqual(msg, obj);
           done();
+        }
+      });
+
+    });
+
+    describe('topic queue subscribe then publish' + suffix, function() {
+      var cpub, qpub, csub, qsub;
+
+      beforeEach(function() {
+        cpub = slmq.create(options).open();
+        qpub = cpub.createPubQueue('leonie');
+        csub = slmq.create(options).open();
+        qsub = csub.createSubQueue('leonie');
+      });
+
+      afterEach(function(done) {
+        csub.close(function() {
+          cpub.close(done);
+        });
+      });
+
+      it('should receive publications', function(done) {
+        var obj = 'quelle affaire';
+
+        qsub.subscribe('some', function(msg) {
+          if(done) {
+            assert.equal(obj, msg);
+            done();
+            done = null;
+          }
+        });
+
+        // Race condition, publications are dropped until broker knows about
+        // subscription, by design, but at least for amqp, we don't know when
+        // that has happened.  Work-around is to keep publishing until test is
+        // done.
+        setImmediate(republish);
+        function republish() {
+          if (done) {
+            qpub.publish(obj, 'some.thing');
+            setImmediate(republish);
+          }
         }
       });
 
