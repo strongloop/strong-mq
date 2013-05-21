@@ -236,9 +236,17 @@ function describePushQueueOpenAndClose(provider) {
         });
       }
 
+      shouldMatchTopic('some.thing.specific.deep', 'some.thing');
+      shouldMatchTopic('some.thing.specific', 'some.thing');
+      shouldMatchTopic('some.thing', 'some.thing');
+
       shouldMatchTopic('some.thing.specific', 'some');
       shouldMatchTopic('some.thing', 'some');
       shouldMatchTopic('some', 'some');
+
+      shouldMatchTopic('some.thing.specific', '');
+      shouldMatchTopic('some.thing', '');
+      shouldMatchTopic('some', '');
 
     });
   }
