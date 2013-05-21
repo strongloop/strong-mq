@@ -31,6 +31,7 @@ describe('topic', function() {
   it('should match identical prefixes', function() {
     assert(topic.matcher('a').test('a'));
     assert(topic.matcher('a').test('a.c'));
+    assert(topic.matcher('a').test('a.c.d'));
 
     assert(!topic.matcher('a').test('ab'));
 
@@ -41,6 +42,30 @@ describe('topic', function() {
     assert(!topic.matcher('a0_._9_').test('a0_z._9_'));
     assert(!topic.matcher('a0_._9_').test('a0_._9_z'));
 
+
+    assert(topic.matcher('some').test('some.thing.really.deep'));
+    assert(topic.matcher('some').test('some.thing.really'));
+    assert(topic.matcher('some').test('some.thing'));
+    assert(topic.matcher('some').test('some'));
+
+    assert(!topic.matcher('some').test('something'));
+    assert(!topic.matcher('some').test('som'));
+    assert(!topic.matcher('some').test(''));
+
+
+    assert(topic.matcher('').test('some.thing.really.deep'));
+    assert(topic.matcher('').test('some.thing.really'));
+    assert(topic.matcher('').test('some.thing'));
+    assert(topic.matcher('').test('some'));
+    assert(topic.matcher('').test(''));
+
+
+    assert(topic.matcher('some.thing').test('some.thing.really.deep'));
+    assert(topic.matcher('some.thing').test('some.thing.really'));
+    assert(topic.matcher('some.thing').test('some.thing'));
+
+    assert(!topic.matcher('some.thing').test('some'));
+    assert(!topic.matcher('some.thing').test(''));
   });
 
 });
