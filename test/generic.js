@@ -192,43 +192,53 @@ function describePushQueueOpenAndClose(provider) {
 
     describe('topic queue subscribe then publish' + suffix, function() {
       var cpub, qpub, csub, qsub;
+      var republish;
 
       beforeEach(function() {
         cpub = slmq.create(options).open();
         qpub = cpub.createPubQueue('leonie');
         csub = slmq.create(options).open();
         qsub = csub.createSubQueue('leonie');
+        republish = true;
       });
 
       afterEach(function(done) {
         csub.close(function() {
           cpub.close(done);
         });
+        republish = false;
       });
 
-      it('should receive publications', function(done) {
-        var obj = 'quelle affaire';
+      function shouldMatchTopic(pubTopic, subTopic) {
+        it('should subcribe on ' + subTopic + ' and ' +
+           'receive topic ' + pubTopic, function(done) {
+          var obj = 'quelle affaire';
 
-        qsub.subscribe('some', function(msg) {
-          if(done) {
-            assert.equal(obj, msg);
-            done();
-            done = null;
+          qsub.subscribe(subTopic, function(msg) {
+            if(done) {
+              assert.equal(obj, msg);
+              done();
+              done = null;
+            }
+          });
+
+          // Race condition, publications are dropped until broker knows about
+          // subscription, by design, but at least for amqp, we don't know when
+          // that has happened.  Work-around is to keep publishing until test is
+          // done.
+          setImmediate(republishLoop);
+          function republishLoop() {
+            if (republish) {
+              qpub.publish(obj, pubTopic);
+              setImmediate(republishLoop);
+            }
           }
         });
+      }
 
-        // Race condition, publications are dropped until broker knows about
-        // subscription, by design, but at least for amqp, we don't know when
-        // that has happened.  Work-around is to keep publishing until test is
-        // done.
-        setImmediate(republish);
-        function republish() {
-          if (done) {
-            qpub.publish(obj, 'some.thing');
-            setImmediate(republish);
-          }
-        }
-      });
+      shouldMatchTopic('some.thing.specific', 'some');
+      shouldMatchTopic('some.thing', 'some');
+      shouldMatchTopic('some', 'some');
 
     });
   }
