@@ -111,13 +111,19 @@ function describePushQueueOpenAndClose(provider) {
 
       it('should open and close a push queue', function(done) {
         var mq = slmq.create(options).open();
-        assert(mq.createPushQueue('june'));
+        var q = mq.createPushQueue('june');
+        assert(q);
+        assert(q.type === 'push');
+        assert(q.name === 'june');
         mq.close(done);
       });
 
       it('should open and close a pull queue', function(done) {
         var mq = slmq.create(options).open();
-        assert(mq.createPullQueue('june'));
+        var q = mq.createPullQueue('june');
+        assert(q);
+        assert(q.type === 'pull');
+        assert(q.name === 'june');
         mq.close(done);
       });
 
