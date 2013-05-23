@@ -9,7 +9,7 @@ var Manager = require('./fixtures/manager');
 describe('clusters', function() {
   [
     'native',
-    //'amqp',
+    'amqp',
   ].forEach(function(provider) {
     describe('with ' + provider, function() {
       // Fork child process, and run fixtures/harness. All tests are run by harness
