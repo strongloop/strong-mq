@@ -2,3 +2,4 @@ README.html
 clustermq-*.tgz
 local.mk
 node_modules
+npm-debug.log

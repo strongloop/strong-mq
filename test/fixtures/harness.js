@@ -1,6 +1,7 @@
-//
-// This "harness" is responsible for running a small cluster of processes that send events to one another, finally
-// recording the results to the file system.
+// This "harness" is responsible for running a small cluster of processes that
+// send events to one another, finally recording the results to the file
+// system. While it runs the tests, it does not assert anything about the
+// results, that is left to the caller.
 //
 var cluster = require('cluster');
 var manager = require('./manager').createManager(process.env);
@@ -75,4 +76,9 @@ if (cluster.isWorker) {
     .runTestSubscribe('workers.topic', process.env.id);
 
   setTimeout(process.exit, 1000);
+} else {
+  // Close the connection, allowing harness to exit after its workers
+  setTimeout(function() {
+    manager.connection.close();
+  }, 1000);
 }
