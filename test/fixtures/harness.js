@@ -76,4 +76,9 @@ if (cluster.isWorker) {
     .runTestSubscribe('workers.topic', process.env.id);
 
   setTimeout(process.exit, 1000);
+} else {
+  // Close the connection, allowing harness to exit after its workers
+  setTimeout(function() {
+    manager.connection.close();
+  }, 1000);
 }
