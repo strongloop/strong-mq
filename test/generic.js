@@ -228,6 +228,19 @@ forEachProvider(function(provider, options) {
       });
     }
 
+    it('should close queues that have never had subscribe called', function(done) {
+      var cpub, qpub, csub, qsub;
+      cpub = slmq.create(options).open();
+      qpub = cpub.createPubQueue('leonie');
+      csub = slmq.create(options).open();
+      qsub = csub.createSubQueue('leonie');
+      cpub.close(function() {
+        csub.close(function() {
+          done();
+        });
+      });
+    });
+
     shouldMatchTopic('some.thing.specific.deep', 'some.thing');
     shouldMatchTopic('some.thing.specific', 'some.thing');
     shouldMatchTopic('some.thing', 'some.thing');
