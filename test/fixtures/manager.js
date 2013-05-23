@@ -3,6 +3,10 @@
 //
 // A very simple manager for setting up and running distributed test cases.
 //
+// It also reads and returns results from the tmpfile.
+//
+// XXX(sam) These behaviours could be split into two, they don't depend on each
+// other, other than knowing the filename.
 var cluster = require('cluster');
 var fs = require('fs');
 var slmq = require('../../');
@@ -19,6 +23,7 @@ function Manager(obj) {
 
   obj = obj || { provider: 'native' };
 
+  // Only do in .init(), not needed in mocha
   this.connection = slmq.create(obj);
   this.connection.open();
 
@@ -136,6 +141,12 @@ function runTestSubscribe(name, topic) {
 //
 // Loads all content printed by previous test runs, returning a sorted Array of the results.
 //
+// Each line looks like:
+//     ID:NAME:MSG
+//
+// ID is id of receiver of MSG (master, worker0, etc.)
+// NAME is name of test, as passed to manager.runTestXxx(NAME, ...)
+// MSG is the message received
 Manager.prototype.loadTestResults = loadTestResults;
 function loadTestResults() {
   var self = this;
