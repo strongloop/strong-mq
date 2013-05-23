@@ -12,9 +12,9 @@ describe('clusters', function() {
     'amqp',
   ].forEach(function(provider) {
     describe('with ' + provider, function() {
-      // Fork child process, and run fixtures/harness. All tests are run by harness
-      // before any of the it() functions below run, to assert the results are as
-      // expected.
+      // Fork child process, and run fixtures/harness. All tests are run by
+      // harness before any of the it() functions below run, to assert the
+      // results are as expected.
       before(function(done) {
         var filename = path.join(os.tmpDir(), 'slmq-' + provider + '-test');
         var manager = Manager.createManager({
@@ -60,12 +60,13 @@ describe('clusters', function() {
         // Assert that `recipient` received `length` number of `name` messages.
         this.checkMessageArray = function(recipient, name, length) {
           var array = results[recipient.toLowerCase()][name];
-          assert(array, recipient + ' did not receive "' + name + '" messages.');
+          assert(array,
+                 recipient + ' did not receive "' + name + '" messages.');
 
           var delta = length - array.length;
           assert.equal(delta, 0,
-                       delta + '"' + name +
-                         '" messages were dropped heading to ' + recipient + '.');
+            delta + '"' + name +
+            '" messages were dropped heading to ' + recipient + '.');
         };
       });
 

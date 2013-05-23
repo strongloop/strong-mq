@@ -7,28 +7,29 @@ var cluster = require('cluster');
 var manager = require('./manager').createManager(process.env);
 var WORKERS = 2;
 
-//
-// There are 17 tests per process with four messages sent per test. With 2 workers, the total number of messages that
-// should be recorded will be 84 push/pull and 156 pub/sub, for 240 total. Each process:
-//
-//  1. Sends messages to itself over push/pull where the PushQueue was created first.
-//  2. Sends messages to itself over push/pull where the PullQueue was created first.
-//  3. Sends messages to master over push/pull.
-//  4. Sends messages to worker0 over push/pull.
-//  5. Sends messages to worker1 over push/pull.
-//  6. Sends messages to both workers over push/pull.
-//  7. Sends messages to all processes over push/pull.
-//  8. Sends messages to master over pub/sub with a generic topic.
-//  9. Sends messages to worker0 over pub/sub with a generic topic.
-//  10. Sends messages to worker1 over pub/sub with a generic topic.
-//  11. Sends messages to both workers over pub/sub with a generic topic.
-//  12. Sends messages to all processes over pub/sub with a generic topic.
-//  13. Sends messages to both workers over pub/sub with a worker0-specific topic.
-//  14. Sends messages to both workers over pub/sub with a worker1-specific topic.
-//  15. Sends messages to all processes over pub/sub with a master-specific topic.
-//  16. Sends messages to all processes over pub/sub with a worker0-specific topic.
-//  17. Sends messages to all processes over pub/sub with a worker1-specific topic.
-//
+/*
+There are 17 tests per process with four messages sent per test. With 2
+workers, the total number of messages that should be recorded will be 84
+push/pull and 156 pub/sub, for 240 total. Each process:
+
+1. Sends messages to itself over push/pull where the PushQueue was created first
+2. Sends messages to itself over push/pull where the PullQueue was created first
+3. Sends messages to master over push/pull
+4. Sends messages to worker0 over push/pull
+5. Sends messages to worker1 over push/pull
+6. Sends messages to both workers over push/pull
+7. Sends messages to all processes over push/pull
+8. Sends messages to master over pub/sub with a generic topic
+9. Sends messages to worker0 over pub/sub with a generic topic
+10. Sends messages to worker1 over pub/sub with a generic topic
+11. Sends messages to both workers over pub/sub with a generic topic
+12. Sends messages to all processes over pub/sub with a generic topic
+13. Sends messages to both workers over pub/sub with a worker0-specific topic
+14. Sends messages to both workers over pub/sub with a worker1-specific topic
+15. Sends messages to all processes over pub/sub with a master-specific topic
+16. Sends messages to all processes over pub/sub with a worker0-specific topic
+17. Sends messages to all processes over pub/sub with a worker1-specific topic
+*/
 manager
   .init(WORKERS)
   .runTestPush(process.env.id + '.pushfirst')
@@ -47,7 +48,8 @@ manager
   .runTestSubscribe('all.topic', process.env.id);
 
 //
-// We delay the "balanced" tests to give other processes time to start up to test the ideal case.
+// We delay the "balanced" tests to give other processes time to start up to
+// test the ideal case.
 //
 setTimeout(function () {
   manager
@@ -66,8 +68,9 @@ setTimeout(function () {
 }, 500);
 
 //
-// Not only do only workers subscribe to the workers.work queue, but workers should be shut down after a reasonable
-// amount of time has been allotted for the tests themselves.
+// Not only do only workers subscribe to the workers.work queue, but workers
+// should be shut down after a reasonable amount of time has been allotted for
+// the tests themselves.
 //
 if (cluster.isWorker) {
   manager

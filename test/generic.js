@@ -241,7 +241,7 @@ forEachProvider(function(provider, options) {
       });
     }
 
-    it('should close queues that have never had subscribe called', function(done) {
+    it('should close unsubscribed queues', function(done) {
       var cpub, qpub, csub, qsub;
       cpub = slmq.create(options).open();
       qpub = cpub.createPubQueue('leonie');

@@ -88,7 +88,8 @@ function runTestPull(name) {
   var queue = self.connection.createPullQueue(name);
 
   queue.subscribe(function handler(msg) {
-    fs.appendFileSync(self.filename, process.env.id + ':' + name + ':' + msg + '\n');
+    fs.appendFileSync(self.filename,
+      process.env.id + ':' + name + ':' + msg + '\n');
   });
 
   return self;
@@ -130,7 +131,8 @@ function runTestSubscribe(name, topic) {
   }
 
   queue.subscribe(topic, function handler(msg) {
-    fs.appendFileSync(self.filename, process.env.id + ':' + name + '.' + topic + ':' + msg + '\n');
+    fs.appendFileSync(self.filename,
+      process.env.id + ':' + name + '.' + topic + ':' + msg + '\n');
   });
 
   return self;
@@ -139,7 +141,8 @@ function runTestSubscribe(name, topic) {
 //
 // ## loadTestResults `loadTestResults()`
 //
-// Loads all content printed by previous test runs, returning a sorted Array of the results.
+// Loads all content printed by previous test runs, returning a sorted Array of
+// the results.
 //
 // Each line looks like:
 //     ID:NAME:MSG
