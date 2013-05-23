@@ -181,6 +181,19 @@ forEachProvider(function(provider, options) {
     });
   });
 
+  it('should allow subscribe before publish', function(done) {
+    var cpub, qpub, csub, qsub;
+    csub = slmq.create(options).open();
+    qsub = csub.createSubQueue('leonie');
+
+    qsub.subscribe('');
+    csub.close(function() {
+      done();
+    });
+  });
+
+  // XXX(sam) test multiple pub and sub on same queue name
+
 
   describe('on topic queue subscribe then publish', function() {
     var cpub, qpub, csub, qsub;
