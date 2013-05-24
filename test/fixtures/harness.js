@@ -65,7 +65,7 @@ setTimeout(function () {
     .runTestPublish('all.topic', 'worker1')
     .runTestPublish('workers.topic', 'worker0')
     .runTestPublish('workers.topic', 'worker1');
-}, 900);
+}, 2000);
 
 //
 // Not only do only workers subscribe to the workers.work queue, but workers
@@ -78,10 +78,10 @@ if (cluster.isWorker) {
     .runTestSubscribe('workers.topic', 'test')
     .runTestSubscribe('workers.topic', process.env.id);
 
-  setTimeout(process.exit, 1500);
+  setTimeout(process.exit, 5000);
 } else {
   // Close the connection, allowing harness to exit after its workers
   setTimeout(function() {
     manager.connection.close();
-  }, 1500);
+  }, 6000);
 }

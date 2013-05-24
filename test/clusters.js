@@ -15,6 +15,8 @@ describe('clusters', function() {
       // Fork child process, and run fixtures/harness. All tests are run by
       // harness before any of the it() functions below run, to assert the
       // results are as expected.
+      // Since this all the tests running, it can take a while.
+      this.timeout(30000);
       before(function(done) {
         var filename = path.join(os.tmpDir(), 'slmq-' + provider + '-test');
         var manager = Manager.createManager({
