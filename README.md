@@ -33,16 +33,16 @@ An example of connecting to a server and listening on a work queue:
 
 ```javascript
 var connection = require('sl-mq')
-    .create('amqp://localhost');
+    .create('amqp://localhost')
+    .open();
 
-connection.open(function (err) {
-    assert(!err);
-    c.pushQueue(function (err) {
-        q.subscribe(function (err, msg) {
-            assert(!err);
-            console.log(msg);
-        });
-    });
+var push = connection.createPushQueue('todo-items');
+push.publish({job: 'clean pool'});
+
+var pull = connection.createPullQueue('todo-items');
+pull.subscribe(function(msg) {
+    console.log('TODO:', msg);
+    connection.close();
 });
 ```
 
