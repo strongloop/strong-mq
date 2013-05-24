@@ -208,14 +208,14 @@ forEachProvider(function(provider, options) {
     });
 
     afterEach(function(done) {
+      republish = false;
       csub.close(function() {
         cpub.close(done);
       });
-      republish = false;
     });
 
     function shouldMatchTopic(pubTopic, subTopic) {
-      it('should subcribe on ' + subTopic + ' and ' +
+      it('should subscribe on ' + subTopic + ' and ' +
          'receive topic ' + pubTopic, function(done) {
         var obj = 'quelle affaire';
 
@@ -235,7 +235,7 @@ forEachProvider(function(provider, options) {
         function republishLoop() {
           if (republish) {
             qpub.publish(obj, pubTopic);
-            setImmediate(republishLoop);
+            setTimeout(republishLoop, 50);
           }
         }
       });

@@ -47,10 +47,10 @@ manager
   .runTestSubscribe('all.topic', 'test')
   .runTestSubscribe('all.topic', process.env.id);
 
-//
-// We delay the "balanced" tests to give other processes time to start up to
-// test the ideal case.
-//
+// Note: Race conditions ahead. in the absence of explicit synchronization about
+// test start-stop, we use timeouts. Publishers need to wait until subscribers
+// are ready, and subscribers need to wait until all messages have been
+// received. This is a bit finicky, because timing depends on the system.
 setTimeout(function () {
   manager
     .runTestPush('workers.work')
@@ -65,7 +65,7 @@ setTimeout(function () {
     .runTestPublish('all.topic', 'worker1')
     .runTestPublish('workers.topic', 'worker0')
     .runTestPublish('workers.topic', 'worker1');
-}, 500);
+}, 900);
 
 //
 // Not only do only workers subscribe to the workers.work queue, but workers
@@ -78,10 +78,10 @@ if (cluster.isWorker) {
     .runTestSubscribe('workers.topic', 'test')
     .runTestSubscribe('workers.topic', process.env.id);
 
-  setTimeout(process.exit, 1000);
+  setTimeout(process.exit, 1500);
 } else {
   // Close the connection, allowing harness to exit after its workers
   setTimeout(function() {
     manager.connection.close();
-  }, 1000);
+  }, 1500);
 }
