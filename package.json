@@ -5,6 +5,10 @@
   "license": "BSD",
   "main": "index.js",
   "scripts": {
+    "blanket": {
+      "pattern": "//^((?!(node_modules|test)).)*$/"
+    },
+    "coverage": "./node_modules/.bin/mocha -r blanket -R html-cov > coverage.html",
     "test": "mocha --reporter spec",
     "lint": "./node_modules/.bin/jshint *.js test lib"
   },
@@ -24,7 +28,8 @@
   "devDependencies": {
     "mocha": "~1.9.0",
     "jshint": "~2.0.1",
-    "marked": "*"
+    "marked": "*",
+    "blanket": "~1.1.4"
   },
   "engines": {
     "node": "*"

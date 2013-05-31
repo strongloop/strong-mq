@@ -1,5 +1,8 @@
 README.html
 clustermq-*.tgz
+coverage.html
 local.mk
 node_modules
 npm-debug.log
+slmq-*-test
+_*
