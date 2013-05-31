@@ -21,6 +21,7 @@
     "email": "sam@strongloop.com"
   },
   "dependencies": {
+    "blanket": "*",
     "amqp": "~0.1.6",
     "underscore": "~1.4.4",
     "async": "~0.2.8"
