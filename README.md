@@ -23,8 +23,8 @@ be able to add pluggable support for new message queue platforms.
 
 ## Installation
 
-    % npm test
     % npm install sl-mq
+    % npm test
 
 
 ## Synopsis
