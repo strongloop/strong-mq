@@ -262,6 +262,35 @@ with RabbitMQ 1.8.1 that is packaged with Debian 6, see the
 [upgrade instructions](http://www.rabbitmq.com/install-debian.html).
 
 
+## Provider: STOMP
+
+Support for ActiveMQ using the STOMP protocol. This provider is based on the
+[node-stomp-client](https://github.com/easternbloc/node-stomp-client) module.
+
+The options are:
+
+* `host` {String} Hostname to connect to, defaults to `'127.0.0.1'`
+* `port` {String} Port to connect to, defaults to `61613`
+* `login` {String} Username to authenticate as, defaults to none
+* `password` {String} Password to authenticate as, defaults to none
+
+The URL format for specifying the options above is:
+
+    stomp://[login][:password][@]host[:port]
+
+Note that the `host` is mandatory when using a URL.
+
+ActiveMQ ships with an example configuration sufficient to run the sl-mq unit
+tests.
+
+Note that node-stomp-client has been tested only with Active MQ 5.8.0. It can
+be installed from
+[apache](http://activemq.apache.org/activemq-580-release.html),
+and run as:
+
+    activemq console xbean:activemq-stomp.xml
+
+
 ## Future work
 
 Future work may include support for the following, as needed, and if
