@@ -10,6 +10,13 @@ describe('topic', function() {
     assert(!topic.valid(true));
   });
 
+  it('should accept null and undefined', function() {
+    assert.equal('', topic.check());
+    assert.equal('', topic.check(null));
+    assert.equal('', topic.check(undefined));
+    assert.equal('X', topic.check('X'));
+  });
+
   it('should be dot-seperated words', function() {
     assert(topic.valid('0'));
     assert(topic.valid('A'));

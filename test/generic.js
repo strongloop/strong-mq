@@ -215,8 +215,14 @@ forEachProvider(function(provider, options) {
     });
 
     function shouldMatchTopic(pubTopic, subTopic) {
-      it('should subscribe on ' + subTopic + ' and ' +
-         'receive topic ' + pubTopic, function(done) {
+      function printable(s) {
+        if (s == null) {
+          return s;
+        }
+        return '"'+s+'"';
+      }
+      it('should subscribe on ' + printable(subTopic) + ' and ' +
+         'receive topic ' + printable(pubTopic), function(done) {
         var obj = 'quelle affaire';
 
         qsub.subscribe(subTopic, function(msg) {
@@ -228,9 +234,8 @@ forEachProvider(function(provider, options) {
         });
 
         // Race condition, publications are dropped until broker knows about
-        // subscription, by design, but at least for amqp, we don't know when
-        // that has happened.  Work-around is to keep publishing until test is
-        // done.
+        // subscription, by design, but we don't know when that has happened.
+        // Work-around is to keep publishing until test is done.
         setImmediate(republishLoop);
         function republishLoop() {
           if (republish) {
@@ -265,5 +270,13 @@ forEachProvider(function(provider, options) {
     shouldMatchTopic('some.thing.specific', '');
     shouldMatchTopic('some.thing', '');
     shouldMatchTopic('some', '');
+    shouldMatchTopic('', '');
+    shouldMatchTopic(null, '');
+
+    shouldMatchTopic('some.thing.specific', null);
+    shouldMatchTopic('some.thing', null);
+    shouldMatchTopic('some', null);
+    shouldMatchTopic('', null);
+    shouldMatchTopic(null, null);
   });
 });
