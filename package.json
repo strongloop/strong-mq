@@ -21,8 +21,8 @@
     "email": "sam@strongloop.com"
   },
   "dependencies": {
-    "blanket": "*",
     "amqp": "~0.1.6",
+    "stomp-client": "https://github.com/sam-github/node-stomp-client/tarball/local",
     "underscore": "~1.4.4",
     "async": "~0.2.8"
   },
