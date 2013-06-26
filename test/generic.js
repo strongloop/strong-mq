@@ -241,7 +241,7 @@ forEachProvider(function(provider, options) {
         function republishLoop() {
           if (republish) {
             qpub.publish(obj, pubTopic);
-            setTimeout(republishLoop, 50);
+            setTimeout(republishLoop, 500);
           }
         }
       });
