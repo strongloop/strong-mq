@@ -125,6 +125,24 @@ forEachProvider(function(provider, options) {
   });
 
 
+  it('should open and double close a push queue', function(done) {
+    var mq = slmq.create(options).open();
+    var q = mq.createPushQueue('june');
+    q.close();
+    q.close();
+    mq.close(done);
+  });
+
+
+  it('should open and double close a pull queue', function(done) {
+    var mq = slmq.create(options).open();
+    var q = mq.createPullQueue('june');
+    q.close();
+    q.close();
+    mq.close(done);
+  });
+
+
   describe('on work queue push then pull', function() {
     var cpush, qpush, cpull, qpull;
 
@@ -181,6 +199,24 @@ forEachProvider(function(provider, options) {
       }
     });
   });
+
+  it('should open and double close a pub queue', function(done) {
+    var mq = slmq.create(options).open();
+    var q = mq.createPubQueue('june');
+    q.close();
+    q.close();
+    mq.close(done);
+  });
+
+
+  it('should open and double close a sub queue', function(done) {
+    var mq = slmq.create(options).open();
+    var q = mq.createSubQueue('june');
+    q.close();
+    q.close();
+    mq.close(done);
+  });
+
 
   it('should allow subscribe before publish', function(done) {
     var cpub, qpub, csub, qsub;
