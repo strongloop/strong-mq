@@ -7,7 +7,7 @@ var slmq = require('../');
 var AMQP = {provider: 'amqp'};
 
 
-describe('open with amqp', function() {
+describe.skip('open with amqp', function() {
   it('should error on a connect failure', function(done) {
     var mq = slmq.create({provider: 'amqp', port: 1});
     mq.NAME = 'FIRST';

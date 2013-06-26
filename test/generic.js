@@ -6,7 +6,8 @@ var slmq = require('../');
 
 
 PROVIDERS = [
-  'amqp',
+  'stomp',
+//'amqp',
   'native',
 ];
 
