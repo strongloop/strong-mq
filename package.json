@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "amqp": "~0.1.6",
-    "stomp-client": "https://github.com/sam-github/node-stomp-client/tarball/local",
+    "stomp-client": "~0.4.0",
     "underscore": "~1.4.4",
     "async": "~0.2.8"
   },
