@@ -29,7 +29,7 @@
   "devDependencies": {
     "mocha": "~1.9.0",
     "jshint": "~2.0.1",
-    "marked": "*",
+    "marked": "~0.2.9",
     "blanket": "~1.1.4"
   },
   "engines": {
