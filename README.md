@@ -1,6 +1,6 @@
-# SL-MQ - clustering of applications on top of message queues
+# strong-mq: clustering of applications on top of message queues
 
-[sl-mq](https://github.com/strongloop/sl-mq) is an abstraction layer
+[strong-mq](https://github.com/strongloop/sl-mq) is an abstraction layer
 over common message distribution patterns, and several different message queue
 implementations, including cluster-native messaging.
 
@@ -23,7 +23,7 @@ be able to add pluggable support for new message queue platforms.
 
 ## Installation
 
-    % npm install sl-mq
+    % npm install strong-mq
     % npm test
 
 
@@ -32,7 +32,7 @@ be able to add pluggable support for new message queue platforms.
 An example of connecting to a server and listening on a work queue:
 
 ```javascript
-var connection = require('sl-mq')
+var connection = require('strong-mq')
     .create('amqp://localhost')
     .open();
 
@@ -227,7 +227,7 @@ Event is emitted when a subcribed pull queue receives a message.
 
 The NativeConnection uses the built-in
 [cluster](http://nodejs.org/docs/latest/api/cluster.html) module to facilitate the
-SL-MQ API.  It's designed to be the first adapter people use in early development,
+strong-mq API.  It's designed to be the first adapter people use in early development,
 before they get whatever system they will use for deployment up and running.
 
 It has no options.
@@ -280,7 +280,7 @@ The URL format for specifying the options above is:
 
 Note that the `host` is mandatory when using a URL.
 
-ActiveMQ ships with an example configuration sufficient to run the sl-mq unit
+ActiveMQ ships with an example configuration sufficient to run the strong-mq unit
 tests.
 
 Note that node-stomp-client has been tested only with Active MQ 5.8.0. It can

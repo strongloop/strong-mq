@@ -1,4 +1,4 @@
-// sl-mq: attempt to lazy-load providers on reference
+// attempt to lazy-load providers on reference
 
 var assert = require('assert');
 var copy = require('underscore').clone;
