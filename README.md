@@ -236,6 +236,15 @@ The URL format is:
 
     native:[//]
 
+### Multiple versions of strong-mq being initialized
+
+If you get an assert during require of strong-mq about multiple versions being
+initialized, then some of the modules you are depending on use strong-mq, but do
+not specify it as a peerDependency. See
+[strongloop/strong-cluster-connect-store](https://github.com/strongloop/strong-cluster-connect-store/commit/dd00ed6978a676725c863e4ce0473bc8d2997d2f)
+as an example of how to correctly specify a dependency on strong-mq in a module.
+An application can depend on strong-mq with a normal dependency.
+
 ## Provider: AMQP
 
 Support for RabbitMQ using the AMQP protocol. This provider is based
