@@ -8,7 +8,7 @@
     "blanket": {
       "pattern": "//^((?!(node_modules|test)).)*$/"
     },
-    "coverage": "./node_modules/.bin/mocha -r blanket -R html-cov > coverage.html",
+    "coverage": "./node_modules/.bin/mocha -r blanket -R html-cov > coverage_strong-mq.html",
     "test": "mocha --reporter spec",
     "lint": "./node_modules/.bin/jshint *.js test lib"
   },
