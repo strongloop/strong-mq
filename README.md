@@ -1,31 +1,30 @@
-# strong-mq: clustering of applications on top of message queues
+# strong-mq: Clustering of Applications on Top of Message Queues
 
 [strong-mq](https://github.com/strongloop/sl-mq) is an abstraction layer
 over common message distribution patterns, and several different message queue
 implementations, including cluster-native messaging.
 
-It allows applications to be written against a single message queue style API, and then
-deployed either singly, or as a cluster, with deploy-time configuration of the messaging
-provider.  Providers include native node clustering, allowing no-dependency deployment
-during test and development. Support for other providers is on-going, and 3rd parties will
-be able to add pluggable support for new message queue platforms.
-
+It allows applications to be written against a single message queue style API,
+and then deployed either singly, or as a cluster, with deploy-time configuration
+of the messaging provider.  Providers include native node clustering, allowing
+no-dependency deployment during test and development. Support for other
+providers is on-going, and 3rd parties will be able to add pluggable support for
+new message queue platforms.
 
 ## Message Patterns
 
-- work queue: published messages are delivered to a single subscriber, common when
-  distributing work items that should be processed by a single worker
-- topic: published messages are delivered to all subscribers, each message is associated
-  with a "topic", and subscribers can specify the topic patterns they want to receive
-- rpc: published messages are delivered to a single subscriber, and a associated response
-  is returned to the original publisher (TBD)
-
+- work queue: published messages are delivered to a single subscriber, common
+  when distributing work items that should be processed by a single worker
+- topic: published messages are delivered to all subscribers, each message is
+  associated with a "topic", and subscribers can specify the topic patterns they
+  want to receive
+- rpc: published messages are delivered to a single subscriber, and a associated
+  response is returned to the original publisher (TBD)
 
 ## Installation
 
     % npm install strong-mq
     % npm test
-
 
 ## Synopsis
 
@@ -46,24 +45,20 @@ pull.subscribe(function(msg) {
 });
 ```
 
-
 ## Event: 'error'
 
 Errors may be emitted as events from either a connection or a queue.  The nature of the
 errors emitted depends on the underlying provider.
-
 
 ## Messages
 
 Message objects can be either an `Object` or `Array`, transmitted as JSON, or a `String`
 or `Buffer`, transmitted as data.
 
-
 ## Queues
 
 Queues are closed when they are empty and have no users. They might or might not
 be persistent across restarts of the queue broker, depending on the provider.
-
 
 ## Connections
 
@@ -101,7 +96,6 @@ Example of declaring amqp, using a URL:
 
     connection = clusermq.create('amqp://guest@localhost');
 
-
 ### connection.provider {String}
 
 Property is set to the name of the provider.
@@ -117,11 +111,9 @@ Example:
       // ... handle error
     });
 
-
 ### connection.close([callback])
 
 Callsback when connection has been closed.
-
 
 ## Work queues (push/pull)
 
@@ -164,7 +156,6 @@ Event is emitted when a subcribed pull queue receives a message.
 
 * `msg` {Object} Message pulled off the queue
 
-
 ## Topic queue (pub/sub)
 
 Topics are dot-separated alphanumeric (or `'_'`) words. Subscription patterns match
@@ -179,7 +170,6 @@ Return a queue for publishing on topics.
 * `msg` {Object} Message to publish onto the queue
 * `topic` {String} Topic of message, default is `''`
 
-
 ### connection.createSubQueue()
 
 Return a queue for subscribing to topics.
@@ -190,9 +180,10 @@ Listen for messages matching pattern on a topic queue.
 
 * `pattern` {String} Pattern of message, may contain wildcards, default is `''`
 
-`listener` is optional, it will be added as a listener for the `'message'` event if
-provided. Add your listener to the `'message'` event directly when subscribing multiple
-times, or all your listeners will be called for all messages.
+`listener` is optional, it will be added as a listener for the `'message'` event
+if provided. Add your listener to the `'message'` event directly when
+subscribing multiple times, or all your listeners will be called for all
+messages.
 
 Example of subscribing to multiple patterns:
 
@@ -226,9 +217,10 @@ Event is emitted when a subcribed pull queue receives a message.
 ## Provider: NATIVE
 
 The NativeConnection uses the built-in
-[cluster](http://nodejs.org/docs/latest/api/cluster.html) module to facilitate the
-strong-mq API.  It's designed to be the first adapter people use in early development,
-before they get whatever system they will use for deployment up and running.
+[cluster](http://nodejs.org/docs/latest/api/cluster.html) module to facilitate
+the strong-mq API.  It's designed to be the first adapter people use in early
+development, before they get whatever system they will use for deployment up and
+running.
 
 It has no options.
 
@@ -236,7 +228,7 @@ The URL format is:
 
     native:[//]
 
-### Multiple versions of strong-mq being initialized
+### Multiple Versions of strong-mq Being Initialized
 
 If you get an assert during require of strong-mq about multiple versions being
 initialized, then some of the modules you are depending on use strong-mq, but do
@@ -251,8 +243,8 @@ Support for RabbitMQ using the AMQP protocol. This provider is based
 on the [node-amqp](https://npmjs.org/package/node-amqp) module, see
 its documentation for more information.
 
-The options (except for `.provider`) or url is passed directly to node-amqp, supported
-options are:
+The options (except for `.provider`) or url is passed directly to node-amqp,
+supported options are:
 
 * `host` {String} Hostname to connect to, defaults to `'localhost'`
 * `port` {String} Port to connect to, defaults to `5672`
@@ -266,10 +258,9 @@ The URL format for specifying the options above is:
 
 Note that the `host` is mandatory when using a URL.
 
-Note that node-amqp supports RabbitMQ 3.0.4, or higher. In particular, it will *not* work
-with RabbitMQ 1.8.1 that is packaged with Debian 6, see the
-[upgrade instructions](http://www.rabbitmq.com/install-debian.html).
-
+Note that node-amqp supports RabbitMQ 3.0.4, or higher. In particular, it will
+*not* work with RabbitMQ 1.8.1 that is packaged with Debian 6, see the [upgrade
+instructions](http://www.rabbitmq.com/install-debian.html).
 
 ## Provider: STOMP
 
@@ -289,27 +280,26 @@ The URL format for specifying the options above is:
 
 Note that the `host` is mandatory when using a URL.
 
-ActiveMQ ships with an example configuration sufficient to run the strong-mq unit
-tests.
+ActiveMQ ships with an example configuration sufficient to run the strong-mq
+unit tests.
 
-Note that node-stomp-client has been tested only with Active MQ 5.8.0. It can
-be installed from
-[apache](http://activemq.apache.org/activemq-580-release.html),
+Note that node-stomp-client has been tested only with Active MQ 5.8.0. It can be
+installed from [apache](http://activemq.apache.org/activemq-580-release.html),
 and run as:
 
     activemq console xbean:activemq-stomp.xml
-
 
 ## Future work
 
 Future work may include support for the following, as needed, and if
 common mechanisms exist among the various queue providers.
 
-- Acknowledgement of msg processing, particularly for work queues, so
-  "exactly once" message handling can be guaranteed. The current API
-  is strictly "one or less", if a consumer fails to process a message
-  that has been delivered to it, it will never be processed.
-- Flow control, so consumers aren't overwhelmed by msgs, and can
-  provide back pressure on the queue when under load.
-- Persistence, whether queues persist beyond the existence of any
-  users or undelivered messages.
+- Acknowledgement of msg processing, particularly for work queues, so "exactly
+  once" message handling can be guaranteed. The current API is strictly "one or
+  less", if a consumer fails to process a message that has been delivered to it,
+  it will never be processed.
+- Flow control, so consumers aren't overwhelmed by msgs, and can provide back
+  pressure on the queue when under load.
+- Persistence, whether queues persist beyond the existence of any users or
+  undelivered messages.
+
