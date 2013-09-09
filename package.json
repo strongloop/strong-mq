@@ -1,6 +1,6 @@
 {
   "name": "strong-mq",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "clustering of applications on top of message queues",
   "license": "MIT",
   "main": "index.js",
