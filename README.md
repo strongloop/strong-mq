@@ -117,7 +117,9 @@ Callsback when connection has been closed.
 
 ## Work queues (push/pull)
 
-### connection.createPushQueue()
+### connection.createPushQueue(name)
+
+* `name` {String} Name used to create queue
 
 Return a queue for publishing work items.
 
@@ -127,7 +129,9 @@ Publish a msg to a push queue.
 
 * `msg` {Object} Message to publish to the queue
 
-### connection.createPullQueue()
+### connection.createPullQueue(name)
+
+* `name` {String} Name used to create queue
 
 Return a queue for subscribing to work items.
 
@@ -161,7 +165,9 @@ Event is emitted when a subcribed pull queue receives a message.
 Topics are dot-separated alphanumeric (or `'_'`) words. Subscription patterns match
 leading words.
 
-### connection.createPubQueue()
+### connection.createPubQueue(name)
+
+* `name` {String} Name used to create queue
 
 Return a queue for publishing on topics.
 
@@ -170,7 +176,9 @@ Return a queue for publishing on topics.
 * `msg` {Object} Message to publish onto the queue
 * `topic` {String} Topic of message, default is `''`
 
-### connection.createSubQueue()
+### connection.createSubQueue(name)
+
+* `name` {String} Name used to create queue
 
 Return a queue for subscribing to topics.
 
