@@ -11,20 +11,19 @@ no-dependency deployment during test and development. Support for other
 providers is on-going, and 3rd parties will be able to add pluggable support for
 new message queue platforms.
 
-## Message Patterns
-
-- work queue: published messages are delivered to a single subscriber, common
-  when distributing work items that should be processed by a single worker
-- topic: published messages are delivered to all subscribers, each message is
-  associated with a "topic", and subscribers can specify the topic patterns they
-  want to receive
-- rpc: published messages are delivered to a single subscriber, and a associated
-  response is returned to the original publisher (TBD)
-
 ## Installation
 
     % npm install strong-mq
     % npm test
+
+### Multiple Versions of strong-mq Being Initialized
+
+If you get an assert during require of strong-mq about multiple versions being
+initialized, then some of the modules you are depending on use strong-mq, but do
+not specify it as a peerDependency. See
+[strongloop/strong-cluster-connect-store](https://github.com/strongloop/strong-cluster-connect-store/commit/dd00ed6978a676725c863e4ce0473bc8d2997d2f)
+as an example of how to correctly specify a dependency on strong-mq in a module.
+An application can depend on strong-mq with a normal dependency.
 
 ## Synopsis
 
@@ -45,17 +44,6 @@ pull.subscribe(function(msg) {
 });
 ```
 
-## Event: 'error'
+## Documentation
 
-Errors may be emitted as events from either a connection or a queue.  The nature of the
-errors emitted depends on the underlying provider.
-
-## Messages
-
-Message objects can be either an `Object` or `Array`, transmitted as JSON, or a `String`
-or `Buffer`, transmitted as data.
-
-## Queues
-
-Queues are closed when they are empty and have no users. They might or might not
-be persistent across restarts of the queue broker, depending on the provider.
+- See [API](api.md) and [StrongLoop](http://docs.strongloop.com/display/DOC/Strong+MQ)
