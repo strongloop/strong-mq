@@ -2,7 +2,10 @@
   "name": "strong-mq",
   "version": "0.0.7",
   "description": "clustering of applications on top of message queues",
-  "license": "MIT",
+  "license": {
+    "name": "Dual MIT/StrongLoop",
+    "url": "https://github.com/strongloop/strong-mq/blob/master/LICENSE"
+  },
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec",
