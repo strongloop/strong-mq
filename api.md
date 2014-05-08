@@ -80,7 +80,7 @@ be persistent across restarts of the queue broker, depending on the provider.
 Message objects can be either an `Object` or `Array`, transmitted as JSON, or a `String`
 or `Buffer`, transmitted as data.
 
-### connection.createPushQueue()
+### connection.createPushQueue(queue_name)
 
 Return a queue for publishing work items.
 
@@ -90,7 +90,7 @@ Publish a msg to a push queue.
 
 * `msg` {Object} Message to publish to the queue
 
-### connection.createPullQueue()
+### connection.createPullQueue(queue_name)
 
 Return a queue for subscribing to work items.
 
@@ -124,7 +124,7 @@ Event is emitted when a subcribed pull queue receives a message.
 Topics are dot-separated alphanumeric (or `'_'`) words. Subscription patterns match
 leading words.
 
-### connection.createPubQueue()
+### connection.createPubQueue(queue_name)
 
 Return a queue for publishing on topics.
 
@@ -133,7 +133,7 @@ Return a queue for publishing on topics.
 * `msg` {Object} Message to publish onto the queue
 * `topic` {String} Topic of message, default is `''`
 
-### connection.createSubQueue()
+### connection.createSubQueue(queue_name)
 
 Return a queue for subscribing to topics.
 
