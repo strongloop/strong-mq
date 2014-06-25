@@ -46,4 +46,4 @@ pull.subscribe(function(msg) {
 
 ## Documentation
 
-- See [API](api.md) and [StrongLoop](http://docs.strongloop.com/display/DOC/Strong+MQ)
+- See [API](api.md) and [StrongLoop](http://docs.strongloop.com/display/NODE/Strong+MQ)
