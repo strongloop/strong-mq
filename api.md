@@ -193,7 +193,7 @@ The URL format is:
 ## Provider: AMQP
 
 Support for RabbitMQ using the AMQP protocol. This provider is based
-on the [node-amqp](https://npmjs.org/package/node-amqp) module, see
+on the [node-amqp](https://www.npmjs.org/package/amqp) module, see
 its documentation for more information.
 
 The options (except for `.provider`) or url is passed directly to node-amqp,
