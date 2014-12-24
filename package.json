@@ -27,8 +27,7 @@
   },
   "devDependencies": {
     "mocha": "~1.9.0",
-    "jshint": "~2.0.1",
-    "marked": "~0.2.9"
+    "jshint": "~2.0.1"
   },
   "optionalDependencies": {
     "sl-blip": "http://blip.strongloop.com/strong-mq@0.0.8"

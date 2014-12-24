@@ -22,7 +22,3 @@ jenkins-install:
 
 jenkins-test:
 	./node_modules/.bin/mocha -R xunit > xunit.xml
-
-README.html: README.md
-	./node_modules/.bin/marked -o $@ $^
-
