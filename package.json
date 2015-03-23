@@ -1,6 +1,6 @@
 {
   "name": "strong-mq",
-  "version": "0.0.9",
+  "version": "1.0.0",
   "description": "clustering of applications on top of message queues",
   "license": {
     "name": "Dual Artistic/StrongLoop",
@@ -30,7 +30,7 @@
     "jshint": "~2.0.1"
   },
   "optionalDependencies": {
-    "sl-blip": "http://blip.strongloop.com/strong-mq@0.0.9"
+    "sl-blip": "http://blip.strongloop.com/strong-mq@1.0.0"
   },
   "engines": {
     "node": "*"

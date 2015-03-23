@@ -1,3 +1,11 @@
+2015-03-23, Version 1.0.0
+=========================
+
+ * package: correct license link (Sam Roberts)
+
+ * Fix bad CLA URL in CONTRIBUTING.md (Ryan Graham)
+
+
 2014-12-24, Version 0.0.9
 =========================
 
