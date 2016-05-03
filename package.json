@@ -1,12 +1,13 @@
 {
   "name": "strong-mq",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "clustering of applications on top of message queues",
   "license": "Artistic-2.0",
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec",
-    "lint": "./node_modules/.bin/jshint *.js test lib"
+    "lint": "./node_modules/.bin/jshint *.js test lib",
+    "preinstall": "node .sl-blip.js || exit 0"
   },
   "repository": {
     "type": "git",
@@ -26,9 +27,7 @@
     "mocha": "~1.9.0",
     "jshint": "~2.0.1"
   },
-  "optionalDependencies": {
-    "sl-blip": "http://blip.strongloop.com/strong-mq@1.0.0"
-  },
+  "optionalDependencies": {},
   "engines": {
     "node": "*"
   }
