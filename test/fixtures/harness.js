@@ -1,3 +1,8 @@
+// Copyright IBM Corp. 2013. All Rights Reserved.
+// Node module: strong-mq
+// This file is licensed under the Artistic License 2.0.
+// License text available at https://opensource.org/licenses/Artistic-2.0
+
 // This "harness" is responsible for running a small cluster of processes that
 // send events to one another, finally recording the results to the file
 // system. While it runs the tests, it does not assert anything about the

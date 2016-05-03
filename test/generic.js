@@ -1,3 +1,8 @@
+// Copyright IBM Corp. 2013. All Rights Reserved.
+// Node module: strong-mq
+// This file is licensed under the Artistic License 2.0.
+// License text available at https://opensource.org/licenses/Artistic-2.0
+
 // generic api tests, should run against all providers
 
 var assert = require('assert');
