@@ -1,6 +1,19 @@
 # strong-mq: Clustering of Applications on Top of Message Queues
 
-[strong-mq](https://github.com/strongloop/sl-mq) is an abstraction layer
+***DO NOT USE THIS:*** This code is an attempt to build a common API over
+multiple message queues so as to allow deploy time selection of the MQ to use.
+In practice, no one does this, they always know the MQ they are going to use.
+Also, this module by necessity exposes a subset of the underlying MQ libraries
+capabilities, so it is perpetually not working as desired.
+
+Use one of these directly:
+
+- https://www.npmjs.com/package/stomp-client
+- https://www.npmjs.com/package/amqp
+
+## Overview
+
+[strong-mq](https://github.com/strongloop/strong-mq) is an abstraction layer
 over common message distribution patterns, and several different message queue
 implementations, including cluster-native messaging.
 
