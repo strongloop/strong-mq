@@ -1,3 +1,11 @@
+2016-11-03, Version 1.0.2
+=========================
+
+ * Note that strong-mq should not be used (Sam Roberts)
+
+ * Update URLs in CONTRIBUTING.md (#31) (Ryan Graham)
+
+
 2016-05-03, Version 1.0.1
 =========================
 
